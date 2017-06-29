@@ -22,10 +22,9 @@ SOURCES += main.cpp \
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
 
-win32{
-  INCLUDEPATH += ../../../20170617-QriNeuronKit/QriNeuronLib
-  LIBS += -L../../../20170617-QriNeuronKit/build-QriNeuronLib-Desktop_Qt_5_8_0_MinGW_32bit-Debug/debug -lQriNeuronLib
-}
+INCLUDEPATH += ../../QriNeuronKit/QriNeuronLib
+LIBS += -L../../QriNeuronKit/build-QriNeuronLib-Desktop_Qt_5_8_0_clang_64bit-Debug -lQriNeuronLib
+
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.

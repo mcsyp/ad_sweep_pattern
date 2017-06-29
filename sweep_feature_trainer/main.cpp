@@ -14,6 +14,8 @@
 #include "sweepfeatureclassifier.h"
 #include "sweepfeatureextractor.h"
 
+#include <tooldebug.h>
+
 using namespace qri_neuron_lib;
 
 
@@ -81,7 +83,6 @@ int main(int argc, char *argv[])
   NeuronEngineFloat engine_feature_;
 
   SweepFeatureTrainer feature_trainer(&key_classifier);
-#if 1
   SweepFeatureClassifier feature_classifier(&engine_feature_,&key_classifier);
 
   do{
@@ -110,8 +111,8 @@ int main(int argc, char *argv[])
     PushToClassifyFeature(PROCESSED_8,CAT_LEFT_HIGH,feature_classifier);
 
   }while(0);
-
-  #endif
+  SaveEngineFloat(&engine_selector_,"neurons_selector.csv");
+  SaveEngineFloat(&engine_feature_,"neurons_feature.csv");
   return 0;
 }
 

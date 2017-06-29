@@ -61,7 +61,6 @@ int SweepFeatureExtractor::ExtractFeatures(DataFrame *raw_frame, SampleList &lis
       sample.feature[F_Kurtosis] = feature_kurtosis_.Process(nomean_data[key_col]+wave_offset,wave_len,sample.feature[F_Mean]);
       sample.feature[F_Skewness] = feature_skewness_.Process(nomean_data[key_col]+wave_offset,wave_len,sample.feature[F_Mean]);
       sample.feature[F_Energy] = feature_energy_.Process(nomean_data[key_col]+wave_offset,wave_len)/FEATURE_ENERGY_SCALE;
-      sample.feature[F_SD] = feature_sd_.Process(nomean_data[key_col]+wave_offset,wave_len,sample.feature[F_Mean]);
       feature_percent_.Process(nomean_data[key_col]+wave_offset,wave_len);
       sample.feature[F_25th] = feature_percent_.Percentile(FeaturePercentile::PERCENTILE_25);
       sample.feature[F_50th] = feature_percent_.Percentile(FeaturePercentile::PERCENTILE_50);

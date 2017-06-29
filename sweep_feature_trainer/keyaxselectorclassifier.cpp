@@ -45,17 +45,17 @@ int KeyAxFeatureExtractor::ExtractFeatures(qri_neuron_lib::DataFrame * raw_frame
   for(int i=0;i<RAW_COLS;++i){
     int feature_start_index=i*FeatureNum;
     feature[feature_start_index+FeatureMean] = FeatureMSE::ComputeMean(raw_frame->Read(i),raw_frame->RowLength());
-    feature[feature_start_index+FeatureEnergy] = feature_energy_.Process(raw_frame->Read(i),raw_frame->RowLength());
+    feature[feature_start_index+FeatureEnergy] = feature_energy_.Process(raw_frame->Read(i),raw_frame->RowLength())/FEATURE_ENERGY_SCALE;
     feature_percent_.Process(raw_frame->Read(i),raw_frame->RowLength());
     feature[feature_start_index+Feature25th] = feature_percent_.Percentile(FeaturePercentile::PERCENTILE_25);
     feature[feature_start_index+Feature50th] = feature_percent_.Percentile(FeaturePercentile::PERCENTILE_50);
     feature[feature_start_index+Feature75th] = feature_percent_.Percentile(FeaturePercentile::PERCENTILE_75);
   }
   feature[RAW_COLS*FeatureNum] = feature_correlation_.Process(raw_frame->Read(0),
-                                                                                                    raw_frame->Read(1),
-                                                                                                    raw_frame->RowLength(),
-                                                                                                    raw_frame->Mean(0),
-                                                                                                    raw_frame->Mean(1));
+                                                              raw_frame->Read(1),
+                                                              raw_frame->RowLength(),
+                                                              raw_frame->Mean(0),
+                                                              raw_frame->Mean(1));
   return feature_len;
 }
 

@@ -14,7 +14,6 @@ public:
     F_Kurtosis,
     F_Skewness,
     F_Energy,
-    F_SD,// standard deviation
     F_25th,
     F_50th,
     F_75th,
@@ -69,7 +68,6 @@ private:
   qri_neuron_lib::FeatureMeanCorssingRate feature_crossrate_;
   qri_neuron_lib::FeatureKurtosis feature_kurtosis_;
   qri_neuron_lib::FeatureSkewness feature_skewness_;
-  qri_neuron_lib::FeatureStandardDeviation feature_sd_;
   qri_neuron_lib::FeaturePercentile feature_percent_;
   qri_neuron_lib::FeatureThresholdWaveFinder feature_finder_;
 };

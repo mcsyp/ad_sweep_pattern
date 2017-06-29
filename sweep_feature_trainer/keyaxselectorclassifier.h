@@ -27,6 +27,7 @@ public:
   static constexpr float FEATURE_GAP_MIN=50.0f;//preprocess delta
   static constexpr float FEATURE_GAP_MAX=2000.0f;//preprocess delta
   static constexpr int    FEATURE_GAP_AXIS=1;
+  static constexpr int FEATURE_ENERGY_SCALE=1000;
 
   /*purpose: extracted features from raw data
    *input:
