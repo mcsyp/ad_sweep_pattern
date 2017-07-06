@@ -51,6 +51,7 @@ class KeyAxSelectorClassifier: public KeyAxFeatureExtractor
 {
 public:
   KeyAxSelectorClassifier(NeuronEngineFloat* engine);
+  virtual ~KeyAxSelectorClassifier();
 
   /*purpose: extracted features from raw data
    *input:

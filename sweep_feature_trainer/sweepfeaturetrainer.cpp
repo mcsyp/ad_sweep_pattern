@@ -37,7 +37,7 @@ bool SweepFeatureTrainer::PushToSample(int cat, const float *row_data, int row_l
   }
 
   //delta check
-  float gap = FeaturePeaks::ComputeGap(row_data[FEATURE_GAP_AXIS],last_data);
+  float gap = fabs(row_data[FEATURE_GAP_AXIS]-last_data);
   if(gap<FEATURE_GAP_MIN || gap>FEATURE_GAP_MAX){
     return false;
   }
@@ -61,7 +61,7 @@ int SweepFeatureTrainer::StartTraining(NeuronEngineFloat &engine, int iterations
   //step1. reset engine
   engine.ResetEngine();
 
-  //step2. start iterations
+  //step3. start iterations
   for(int iter=0;iter<iterations;++iter){
     //step1. gerenate rand array
     const int rand_size = sample_list_.size();

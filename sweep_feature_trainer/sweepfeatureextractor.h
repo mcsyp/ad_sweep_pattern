@@ -25,6 +25,7 @@ public:
   static constexpr float FEATURE_GAP_MIN=50.0f;//preprocess delta
   static constexpr float FEATURE_GAP_MAX=2000.0f;//preprocess delta
   static constexpr int FEATURE_GAP_AXIS=1;
+  static constexpr float FEATURE_SCALE_RANGE=1000.0f;
 
   static constexpr int SAMPLE_COLS=F_Num;
   static constexpr int SAMPLE_ROWS=1;
@@ -53,9 +54,19 @@ public:
    * the length of the samplelist array
    */
   virtual int ExtractFeatures(qri_neuron_lib::DataFrame * raw_frame, SampleList& list);
-protected:
-  int ExtractFeaturesFromBuffer(int cat, const float * raw_data,int raw_len,SampleList& list);
 
+  /*purpose: normalzie all features in the sample list
+   *input:
+   * @src_list, the source sample list
+   *output:
+   * @out_list, output noramlized feature to this list
+   *return:
+   * the length of the output list
+   * return 0, if nor successed
+   */
+  virtual int NormalizeSampleFeatures(const SampleList& src_list,SampleList& out_list);
+
+  inline void CopySample(const sample_t & src_sampe, sample_t &dst_sample);
 private:
   //depends on key selector classifier
   KeyAxSelectorClassifier * key_selector_;
@@ -70,6 +81,9 @@ private:
   qri_neuron_lib::FeatureSkewness feature_skewness_;
   qri_neuron_lib::FeaturePercentile feature_percent_;
   qri_neuron_lib::FeatureThresholdWaveFinder feature_finder_;
+
+  qri_neuron_lib::ComputeScaleQuant255 scale_quant255_;
+  qri_neuron_lib::FeatureMinMax feature_minmax_;
 };
 
 #endif // SWEEPFEATUREEXTRACTOR_H

@@ -26,7 +26,7 @@ int SweepFeatureClassifier::PushToClassify(float row_data[], int row_len, result
   if(result==NULL || result_size<=0)return -1;
 
   //step1. check delta
-  float gap = FeaturePeaks::ComputeGap(row_data[FEATURE_GAP_AXIS],last_raw);
+  float gap = fabs(row_data[FEATURE_GAP_AXIS]-last_raw);
   if(gap<FEATURE_GAP_MIN || gap>FEATURE_GAP_MAX){
     return -1;
   }

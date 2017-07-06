@@ -31,7 +31,7 @@ int KeyAxSelectorTrainer::PushToSample(int cat,float row_data[],int row_len){
   }
 
   //step2. check the delta
-  float gap = FeaturePeaks::ComputeGap(row_data[FEATURE_GAP_AXIS],last_raw);
+  float gap = fabs(row_data[FEATURE_GAP_AXIS]-last_raw);
   if(gap>FEATURE_GAP_MAX || gap<FEATURE_GAP_MIN){
     return 0;//not accepted
   }

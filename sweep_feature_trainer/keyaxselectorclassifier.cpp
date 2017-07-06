@@ -1,5 +1,6 @@
 #include "keyaxselectorclassifier.h"
 #include <stdio.h>
+#include <math.h>
 using namespace std;
 using namespace qri_neuron_lib;
 
@@ -7,13 +8,17 @@ KeyAxSelectorClassifier::KeyAxSelectorClassifier(NeuronEngineFloat* engine){
   this->engine_ = engine;
   raw_frame_ = new DataFrame(RAW_ROWS,RAW_COLS);
 }
+
+KeyAxSelectorClassifier::~KeyAxSelectorClassifier(){
+  if(raw_frame_)delete raw_frame_;
+}
 int KeyAxSelectorClassifier::PushToClassify(float row_data[], int row_len){
   float last_raw=0.0f;
   if(row_data==NULL ||row_len<RAW_COLS)return 0;
 
   //step1. check delta
   int ret=-1;
-  float gap = FeaturePeaks::ComputeGap(row_data[FEATURE_GAP_AXIS],last_raw);
+  float gap = fabs(row_data[FEATURE_GAP_AXIS]-last_raw);
   if(gap<FEATURE_GAP_MIN || gap>FEATURE_GAP_MAX){
     return -1;
   }
@@ -44,15 +49,15 @@ int KeyAxFeatureExtractor::ExtractFeatures(qri_neuron_lib::DataFrame * raw_frame
   int feature_len = FeatureNum*RAW_COLS+1;
   for(int i=0;i<RAW_COLS;++i){
     int feature_start_index=i*FeatureNum;
-    feature[feature_start_index+FeatureMean] = FeatureMSE::ComputeMean(raw_frame->Read(i),raw_frame->RowLength());
-    feature[feature_start_index+FeatureEnergy] = feature_energy_.Process(raw_frame->Read(i),raw_frame->RowLength())/FEATURE_ENERGY_SCALE;
-    feature_percent_.Process(raw_frame->Read(i),raw_frame->RowLength());
+    feature[feature_start_index+FeatureMean] = FeatureMSE::ComputeMean(raw_frame->ReadColumnData(i),raw_frame->RowLength());
+    feature[feature_start_index+FeatureEnergy] = feature_energy_.Process(raw_frame->ReadColumnData(i),raw_frame->RowLength())/FEATURE_ENERGY_SCALE;
+    feature_percent_.Process(raw_frame->ReadColumnData(i),raw_frame->RowLength());
     feature[feature_start_index+Feature25th] = feature_percent_.Percentile(FeaturePercentile::PERCENTILE_25);
     feature[feature_start_index+Feature50th] = feature_percent_.Percentile(FeaturePercentile::PERCENTILE_50);
     feature[feature_start_index+Feature75th] = feature_percent_.Percentile(FeaturePercentile::PERCENTILE_75);
   }
-  feature[RAW_COLS*FeatureNum] = feature_correlation_.Process(raw_frame->Read(0),
-                                                              raw_frame->Read(1),
+  feature[RAW_COLS*FeatureNum] = feature_correlation_.Process(raw_frame->ReadColumnData(0),
+                                                              raw_frame->ReadColumnData(1),
                                                               raw_frame->RowLength(),
                                                               raw_frame->Mean(0),
                                                               raw_frame->Mean(1));
