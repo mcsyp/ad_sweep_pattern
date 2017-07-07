@@ -15,6 +15,7 @@
 #include "sweepfeatureextractor.h"
 
 #include <tooldebug.h>
+#include <QDebug>
 
 using namespace qri_neuron_lib;
 
@@ -275,12 +276,10 @@ float PushToClassifyFeature(const char *src_path, int target_cat, SweepFeatureCl
       if(result_len>0 && Possibility(target_cat,result,result_len)>0.5f){
         ++correct_frames;
       }
-#if 0
-      printf("valid results:");
+#if 1
       for(int i=0;i<result_len;++i){
-        printf("%d ",result[i].cat);
+        qDebug()<<"["<<i<<"]: cat:"<<result[i].cat<<" frame_len:"<<result[i].frame_len;
       }
-      printf("");
 #endif
     }
 

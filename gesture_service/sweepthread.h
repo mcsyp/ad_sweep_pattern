@@ -24,20 +24,22 @@ public:
   virtual ~SweepThread();
   virtual void run();
 
-  void StartTask(QString& sign,QByteArray& raw_data);
-
+  void StartTask(QString& sign,qint64 start,qint64 end,QByteArray& raw_data);
+  int Index()const {return index_;}
 signals:
-  void resultReady(QString & sign);
+  void resultReady(QString sign,int type,int total_samples,int cat_samples);
 
 public:
   NeuronEngineFloat engine_key_;
   NeuronEngineFloat engine_feature_;
 protected:
   SweepFeatureClassifier *feature_;
-  KeyAxSelectorClassifier *selector_;
+  KeyAxSelectorClassifier *key_;
 
   //gesture basic info
   QString signature_;//the task signature
+  qint64 start_time_;
+  qint64 end_time_;
   QByteArray raw_data_;
 
 private:

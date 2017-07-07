@@ -25,42 +25,4 @@ typedef std::map<const char*,gesture_result_t> GestureMap;
 typedef std::vector<gesture_result_t> GestureList;
 
 extern ConfigParser::ConfigMap g_configs;
-int LoadEngine(const QString& src_path,NeuronEngineFloat & engine){
-  if(src_path.isEmpty())return 0;
-  QFile src_file(src_path);
-  if(!src_file.open(QFile::ReadOnly)){
-    qDebug()<<"Fail to open file:"<<src_path;
-    return 0;
-  }
-  QTextStream src_text(&src_file);
-
-  //step1.reset engine
-  engine.ResetEngine();
-
-  engine.BeginRestoreMode();
-  while(!src_text.atEnd()){
-    QString str_record = src_text.readLine();
-    QStringList str_list = str_record.split(',');
-    if(str_list.size()<3)continue;
-
-    //read cat,min_aif, aif
-    int cat =  str_list[0].toInt();
-    int min_aif = str_list[1].toFloat();
-    int aif = str_list[2].toFloat();
-
-    //read buffer
-    const int neuron_size=1024;
-    float neuron_buffer[neuron_size];
-    int neuron_len=0;
-    for(int i=0;i<str_list.size()-3;++i){
-      neuron_buffer[i]=str_list[3+i].toFloat();
-      ++neuron_len;
-    }
-
-    //restore
-    engine.RestoreNeuron(neuron_buffer,neuron_len,cat,aif,min_aif);
-  }
-  engine.EndRestoreMode();
-  return engine.NeuronCount();
-}
 #endif // GLOBAL_SERVICE_H

@@ -38,7 +38,7 @@ int SweepFeatureClassifier::PushToClassify(float row_data[], int row_len, result
     raw_frame_->Pop(RAW_DELTA);
     return ret;
   }
-  return -1;
+  return 0;
 }
 
 int SweepFeatureClassifier::Classify(DataFrame * raw_frame,result_cat_t result[],int result_size){
@@ -49,11 +49,18 @@ int SweepFeatureClassifier::Classify(DataFrame * raw_frame,result_cat_t result[]
   sample_list_.clear();
   ExtractFeatures(raw_frame,sample_list_);
 
-  if(result==NULL || result_size<sample_list_.size())return 0;
+  if(result==NULL || result_size<=0)return 0;
 
+  int result_len=0;
   for(int i=0;i<sample_list_.size();++i){
     sample_t  sample = sample_list_.at(i);
-    result[i].cat = engine_feature_->Classify(sample.feature,sample.feature_len);
+    int cat = engine_feature_->Classify(sample.feature,sample.feature_len);
+    if(cat>0){
+      result[result_len].cat = cat;
+      result[result_len].frame_len = sample.frame_len;
+      result[result_len].frame_offset = sample.frame_offset;
+      ++result_len;
+    }
   }
-  return sample_list_.size();
+  return result_len;
 }

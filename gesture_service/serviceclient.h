@@ -17,6 +17,7 @@ class ServiceClient : public QTcpSocket
 public:
   static constexpr int RX_MAX_SIZE=4096;
   static constexpr int RETRY_TIMEOUT=3000;
+  static constexpr int SIGNATURE_COLS=3;
   enum SERVER_CMDID {
     SERVER_PATTERN_REQ=0x1,
     SERVER_PATTERN_ACK=0x2,
@@ -30,6 +31,8 @@ public:
   virtual ~ServiceClient();
 
   bool Setup(QString name,int port);
+
+  static int LoadEngine(const QString& src_path,NeuronEngineFloat & engine);
 protected slots:
   void onConnected();
   void onDisconnected();
@@ -38,6 +41,7 @@ protected slots:
   void onTimeoutRetry();
   void onPayloadReady(int cmdid, QByteArray & payload);
 
+  void onResultReady(QString sign, int type, int total,int cat);
 protected:
   QString host_name_;
   int host_port_;
