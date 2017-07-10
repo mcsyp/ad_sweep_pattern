@@ -63,12 +63,12 @@ int WaveFeatureExtractor::ExtractFeatures(DataFrame *raw_frame,SampleList &list)
       const float * ref_col_data = source_ref_data+wave_offset;
       sample.feature[F_Mean] = FeatureMSE::ComputeMean(key_col_data,wave_len);
       sample.feature[F_AbsMean] = FeatureMSE::ComputeAbsoluteMean(key_col_data,wave_len);
-      sample.feature[F_Corssrate] = feature_crossrate_.Process(key_col_data,wave_len);
-      sample.feature[F_Correlation] = feature_correlation_.Process(key_col_data,ref_col_data,wave_len);
-      sample.feature[F_Kurtosis] = feature_kurtosis_.Process(key_col_data,wave_len,sample.feature[F_Mean]);
-      sample.feature[F_Skewness] = feature_skewness_.Process(key_col_data,wave_len,sample.feature[F_Mean]);
-      sample.feature[F_Energy] = feature_energy_.Process(key_col_data,wave_len)/FEATURE_ENERGY_SCALE;
-      sample.feature[F_CEnergy] = feature_c_energy_.Process(key_col_data,ref_col_data,wave_len)/FEATURE_ENERGY_SCALE;
+      sample.feature[F_Corssrate] = feature_crossrate_.Process(key_col_data,wave_len)*FEATURE_SCALE_CROSSRATE;
+      sample.feature[F_Correlation] = feature_correlation_.Process(key_col_data,ref_col_data,wave_len)*FEATURE_SCALE_CORRELATION;
+      sample.feature[F_Kurtosis] = feature_kurtosis_.Process(key_col_data,wave_len,sample.feature[F_Mean])*FEATURE_SCALE_KUR;
+      sample.feature[F_Skewness] = feature_skewness_.Process(key_col_data,wave_len,sample.feature[F_Mean])*FEATURE_SCALE_SKEW;
+      sample.feature[F_Energy] = feature_energy_.Process(key_col_data,wave_len)*FEATURE_SCALE_ENERGY;
+      sample.feature[F_CEnergy] = feature_c_energy_.Process(key_col_data,ref_col_data,wave_len)*FEATURE_SCALE_ENERGY;
       feature_percent_.Process(key_col_data,wave_len);
       sample.feature[F_25th] = feature_percent_.Percentile(FeaturePercentile::PERCENTILE_25);
       sample.feature[F_50th] = feature_percent_.Percentile(FeaturePercentile::PERCENTILE_50);
@@ -82,47 +82,3 @@ int WaveFeatureExtractor::ExtractFeatures(DataFrame *raw_frame,SampleList &list)
   return list.size();
 }
 
-int WaveFeatureExtractor::NormalizeSampleFeatures(const WaveFeatureExtractor::SampleList &src_list, WaveFeatureExtractor::SampleList &out_list)
-{
-  if(src_list.size()<=1)return 0;
-  const int feature_size = src_list.size();
-  DataFrame * ptr_frame = new DataFrame(feature_size,F_Num);
-
-  //step1. duplicate all feature data to ptr_frame
-  for(auto iter = src_list.begin();iter!=src_list.end();++iter){
-    sample_t src_sample = *iter;
-
-    //step1. copy the dst sample
-    sample_t dst_sample;
-    CopySample(src_sample,dst_sample);
-    out_list.push_back(dst_sample);
-    //step2. save to the dst frame
-    ptr_frame->Push(src_sample.feature,src_sample.feature_len);
-  }
-
-  //step2. scale all rows
-  for(int i=0;i<ptr_frame->Columns();++i){
-    float min, max;
-    const float * col_data = ptr_frame->ReadColumnData(i);
-    int col_data_len = ptr_frame->RowLength();
-    feature_minmax_.Process(col_data,col_data_len);
-    feature_minmax_.MinMaxValue(&min,&max);
-
-    if(min==max)continue;
-    for(int k=0;k<col_data_len;++k){
-      out_list[k].feature[i] = (src_list[k].feature[i]-min)*FEATURE_SCALE_RANGE/(max-min);
-    }
-  }
-
-  //final step
-  delete ptr_frame;
-  return out_list.size();
-}
-
-void WaveFeatureExtractor::CopySample(const WaveFeatureExtractor::sample_t &src_sample, WaveFeatureExtractor::sample_t &dst_sample){
-  dst_sample.cat = src_sample.cat;
-  dst_sample.feature_len = src_sample.feature_len;
-  dst_sample.frame_len = src_sample.frame_len;
-  dst_sample.frame_offset = src_sample.frame_offset;
-  memcpy((uint8_t*)dst_sample.feature,(uint8_t*)src_sample.feature,src_sample.feature_len*sizeof(float));
-}

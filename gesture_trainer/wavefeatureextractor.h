@@ -24,12 +24,16 @@ public:
     F_Num
   };
   static constexpr int FEATURE_MAXNUM=(int)(F_Num*5/4);
-  static constexpr float FEATURE_ENERGY_SCALE=800.0f; //energy extraction
   static constexpr int FEATURE_WAVELEN_MIN=10;//wave extraction
   static constexpr float FEATURE_GAP_MIN=10.0f;//preprocess delta
   static constexpr float FEATURE_GAP_MAX=2000.0f;//preprocess delta
   static constexpr int FEATURE_GAP_AXIS=1;
-  static constexpr float FEATURE_SCALE_RANGE=1000.0f;
+
+  static constexpr float FEATURE_SCALE_ENERGY=1.0f/800.0f; //energy extraction
+  static constexpr float FEATURE_SCALE_CROSSRATE=800.0f;
+  static constexpr float FEATURE_SCALE_CORRELATION=500.0f;
+  static constexpr float FEATURE_SCALE_KUR=200.0f;
+  static constexpr float FEATURE_SCALE_SKEW=80.0f;
 
   static constexpr int SAMPLE_COLS=F_Num;
   static constexpr int SAMPLE_ROWS=1;
@@ -59,18 +63,6 @@ public:
    */
   virtual int ExtractFeatures(qri_neuron_lib::DataFrame * raw_frame,SampleList& list);
 
-  /*purpose: normalzie all features in the sample list
-   *input:
-   * @src_list, the source sample list
-   *output:
-   * @out_list, output noramlized feature to this list
-   *return:
-   * the length of the output list
-   * return 0, if nor successed
-   */
-  virtual int NormalizeSampleFeatures(const SampleList& src_list,SampleList& out_list);
-
-  inline void CopySample(const sample_t & src_sampe, sample_t &dst_sample);
 private:
   //preprocess
   qri_neuron_lib::FeatureRemoveMean feature_nomean_;

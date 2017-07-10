@@ -1,20 +1,11 @@
-#include "sweepthread.h"
+#include "patternthread.h"
 #include <QTextStream>
 #include <qdebug.h>
 #include "global_service.h"
-SweepThread::SweepList SweepThread::sweep_list = SweepThread::SweepList();
-void SweepThread::Remove(int index){
-  for(auto iter = sweep_list.begin();iter!=sweep_list.end();++iter){
-    SweepThread * t = *iter;
-    if(t && t->index_==index){
-      sweep_list.erase(iter);
-      break;
-    }
-  }
-}
-SweepThread* SweepThread::Available(){
+PatternThread::SweepList PatternThread::sweep_list = PatternThread::SweepList();
+PatternThread* PatternThread::Available(){
   for(auto iter=sweep_list.begin();iter!=sweep_list.end();++iter){
-    SweepThread * t = *iter;
+    PatternThread * t = *iter;
     if(t && t->isRunning()==false){
       return t;
     }
@@ -22,15 +13,7 @@ SweepThread* SweepThread::Available(){
   return NULL;
 }
 
-void SweepThread::ReleaseAll(){
-  for(auto iter = sweep_list.begin();iter!=sweep_list.end();++iter){
-    SweepThread * t = *iter;
-    if(t)delete t;
-  }
-  sweep_list.clear();
-}
-
-SweepThread::SweepThread(QObject *parent) : QThread(parent){
+PatternThread::PatternThread(QObject *parent) : QThread(parent){
   signature_ = QString();
   index_ = sweep_list.size();
   sweep_list.push_back(this);//save this to the global list
@@ -41,12 +24,12 @@ SweepThread::SweepThread(QObject *parent) : QThread(parent){
   //step2.inti feature classifier
   feature_ = new WaveClassifier(&engine_feature_,key_);
 }
-SweepThread::~SweepThread(){
+PatternThread::~PatternThread(){
   if(key_) delete key_;
   if(feature_) delete feature_;
-  Remove(index_);
+  sweep_list.removeAll(this);
 }
-void SweepThread::StartTask(QString& sign, qint64 start, qint64 end, QByteArray& raw_data){
+void PatternThread::StartTask(QString& sign, qint64 start, qint64 end, QByteArray& raw_data){
   signature_ = sign;
   raw_data_ = raw_data;
   start_time_ = start;
@@ -54,7 +37,7 @@ void SweepThread::StartTask(QString& sign, qint64 start, qint64 end, QByteArray&
   this->start();
 }
 
-void SweepThread::run(){
+void PatternThread::run(){
   if(raw_data_.size()<=0)return;
 
   QTextStream stream(&raw_data_);

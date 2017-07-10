@@ -38,8 +38,8 @@ int FrameFeatureExtractor::ExtractFeatures(qri_neuron_lib::DataFrame * raw_frame
     int feature_start_index=i*FeatureNum;
     feature[feature_start_index+FeatureMean] = FeatureMSE::ComputeMean(wave_data,wave_max_len);
     feature[feature_start_index+FeatureAbsMean] = FeatureMSE::ComputeAbsoluteMean(wave_data,wave_max_len);
-    feature[feature_start_index+FeatureEnergy] = feature_energy_.Process(wave_data,wave_max_len)/FEATURE_ENERGY_SCALE;
-    feature[feature_start_index+FeatureCrossRate] = feature_crossrate_.Process(wave_data,wave_max_len);
+    feature[feature_start_index+FeatureEnergy] = feature_energy_.Process(wave_data,wave_max_len)*FEATURE_SCALE_ENERGY;
+    feature[feature_start_index+FeatureCrossRate] = feature_crossrate_.Process(wave_data,wave_max_len)*FEATURE_SCALE_CROSSRATE;
     feature_percent_.Process(wave_data,wave_max_len);
     feature[feature_start_index+Feature25th] = feature_percent_.Percentile(FeaturePercentile::PERCENTILE_25);
     feature[feature_start_index+Feature50th] = feature_percent_.Percentile(FeaturePercentile::PERCENTILE_50);
@@ -49,6 +49,6 @@ int FrameFeatureExtractor::ExtractFeatures(qri_neuron_lib::DataFrame * raw_frame
                                                               raw_frame->ReadColumnData(1),
                                                               raw_frame->RowLength(),
                                                               raw_frame->Mean(0),
-                                                              raw_frame->Mean(1));
+                                                              raw_frame->Mean(1))*FEATURE_SCALE_CORRELATION;
   return feature_len;
 }

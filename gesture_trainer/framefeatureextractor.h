@@ -25,7 +25,10 @@ public:
   static constexpr float FEATURE_GAP_MIN=50.0f;//preprocess delta
   static constexpr float FEATURE_GAP_MAX=2000.0f;//preprocess delta
   static constexpr int   FEATURE_GAP_AXIS=1;
-  static constexpr int   FEATURE_ENERGY_SCALE=1000;
+
+  static constexpr float FEATURE_SCALE_ENERGY=1.0f/800.0f; //energy extraction
+  static constexpr float FEATURE_SCALE_CROSSRATE=800.0f;
+  static constexpr float FEATURE_SCALE_CORRELATION= 500.0f;
   explicit FrameFeatureExtractor(QObject* parent=NULL);
   /*purpose: extracted features from raw data
    *input:

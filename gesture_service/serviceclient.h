@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "serviceprotocol.h"
-#include "sweepthread.h"
+#include "patternthread.h"
 
 class ServiceClient : public QTcpSocket
 {
@@ -47,7 +47,7 @@ protected:
   int host_port_;
   QTimer timer_retry_;
   ServiceProtocol protocol_;
-  QVector<SweepThread*> sweep_list_;
+  QVector<PatternThread*> sweep_list_;
 };
 
 #endif // ServerOpti_H

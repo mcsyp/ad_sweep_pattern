@@ -17,7 +17,13 @@ ServiceClient::ServiceClient(QObject *parent) :QTcpSocket(parent)
 ServiceClient::~ServiceClient(){
   //reset client
   this->disconnectFromHost();
-  SweepThread::ReleaseAll();
+  for(auto iter = PatternThread::sweep_list.begin();iter!=PatternThread::sweep_list.end();++iter){
+    PatternThread* thread = *iter;
+    if(thread){
+      thread->deleteLater();
+    }
+  }
+  QThread::msleep(100);
 }
 
 bool ServiceClient::Setup(QString name, int port){
@@ -25,7 +31,7 @@ bool ServiceClient::Setup(QString name, int port){
   for(int i=0;i<SWEEP_MAX_THREADS;++i){
     QString path_sweep_key = g_configs[SWEEP_CONFIG_KEY];
     QString path_sweep_feature = g_configs[SWEEP_CONFIG_FEATURE];
-    SweepThread * sweep_thread = new SweepThread;
+    PatternThread * sweep_thread = new PatternThread;
 
     if(0==LoadEngine(path_sweep_key,sweep_thread->engine_key_)){
       qDebug()<<tr("Fail to load neurons from:%1").arg(path_sweep_key);
@@ -38,7 +44,7 @@ bool ServiceClient::Setup(QString name, int port){
 
     connect(sweep_thread,SIGNAL(resultReady(QString,int,int,int)),this,SLOT(onResultReady(QString,int,int,int)));
   }
-  qDebug()<<tr("%1 sweep instance created.").arg(SweepThread::sweep_list.size());
+  qDebug()<<tr("%1 sweep instance created.").arg(PatternThread::sweep_list.size());
 
   //setp2. setup server
   host_name_ = name;
@@ -91,7 +97,7 @@ void ServiceClient::onPayloadReady(int cmdid, QByteArray &payload){
   switch(cmdid){
   case SERVER_PATTERN_REQ:
       //step1. find a valid thread
-      SweepThread * t = SweepThread::Available();
+      PatternThread * t = PatternThread::Available();
       //qDebug()<<tr("[%1,%2]Thread_%3 is ready to serve.").arg(__FILE__).arg(__LINE__).arg(t->Index());
       t->StartTask(signature,start,end,payload);
       break;

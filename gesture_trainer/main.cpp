@@ -3,6 +3,7 @@
 #include <QTextStream>
 #include <QDir>
 #include <QStringList>
+#include <QTime>
 
 #include <stdio.h>
 #include <math.h>
@@ -146,327 +147,266 @@ float Possibility(int target_cat,WaveClassifier::result_cat_t * result_array,int
 void  PrintEngine(const NeuronEngineFloat &  engine);
 void  PrintNeuron(const NeuronFloat *nf);
 
+typedef struct training_case_s{
+  int cat;
+  const char* path;
+}training_case_t;
+
+const int g_sweep_size=54;
+training_case_t g_sweep_array[]={{CAT_BIG_BROOM_RIGHT_HIGH,PROCESSED_0},
+                                 {CAT_BIG_BROOM_RIGHT_HIGH,PROCESSED_1},
+                                 {CAT_BIG_BROOM_RIGHT_HIGH,PROCESSED_2},
+                                 {CAT_BIG_BROOM_RIGHT_HIGH,PROCESSED_3},
+                                 {CAT_BIG_BROOM_RIGHT_HIGH,PROCESSED_4},
+                                 {CAT_BIG_BROOM_RIGHT_HIGH,PROCESSED_5},
+                                 {CAT_BIG_BROOM_RIGHT_HIGH,PROCESSED_6},
+                                 {CAT_BIG_BROOM_RIGHT_HIGH,PROCESSED_7},
+
+                                 {CAT_BIG_BROOM_RIGHT_LOW,PROCESSED_10},
+                                 {CAT_BIG_BROOM_RIGHT_LOW,PROCESSED_11},
+                                 {CAT_BIG_BROOM_RIGHT_LOW,PROCESSED_12},
+                                 {CAT_BIG_BROOM_RIGHT_LOW,PROCESSED_13},
+                                 {CAT_BIG_BROOM_RIGHT_LOW,PROCESSED_14},
+                                 {CAT_BIG_BROOM_RIGHT_LOW,PROCESSED_15},
+                                 {CAT_BIG_BROOM_RIGHT_LOW,PROCESSED_16},
+                                 {CAT_BIG_BROOM_RIGHT_LOW,PROCESSED_17},
+
+                                 {CAT_BIG_BROOM_LEFT_0,PROCESSED_100},
+                                 {CAT_BIG_BROOM_LEFT_0,PROCESSED_101},
+                                 {CAT_BIG_BROOM_LEFT_0,PROCESSED_102},
+                                 {CAT_BIG_BROOM_LEFT_0,PROCESSED_103},
+                                 {CAT_BIG_BROOM_LEFT_0,PROCESSED_104},
+
+                                 {CAT_BIG_BROOM_LEFT_1,PROCESSED_110},
+                                 {CAT_BIG_BROOM_LEFT_1,PROCESSED_111},
+                                 {CAT_BIG_BROOM_LEFT_1,PROCESSED_112},
+                                 {CAT_BIG_BROOM_LEFT_1,PROCESSED_113},
+                                 {CAT_BIG_BROOM_LEFT_1,PROCESSED_114},
+
+                                 {CAT_SMALL_BROOM_RIGHT_FORWARD,PROCESSED_20},
+                                 {CAT_SMALL_BROOM_RIGHT_FORWARD,PROCESSED_21},
+                                 {CAT_SMALL_BROOM_RIGHT_FORWARD,PROCESSED_22},
+                                 {CAT_SMALL_BROOM_RIGHT_FORWARD,PROCESSED_23},
+                                 {CAT_SMALL_BROOM_RIGHT_FORWARD,PROCESSED_24},
+                                 {CAT_SMALL_BROOM_RIGHT_FORWARD,PROCESSED_25},
+
+                                 {CAT_SMALL_BROOM_RIGHT_HRIZON,PROCESSED_30},
+                                 {CAT_SMALL_BROOM_RIGHT_HRIZON,PROCESSED_31},
+                                 {CAT_SMALL_BROOM_RIGHT_HRIZON,PROCESSED_32},
+                                 {CAT_SMALL_BROOM_RIGHT_HRIZON,PROCESSED_33},
+                                 {CAT_SMALL_BROOM_RIGHT_HRIZON,PROCESSED_34},
+                                 {CAT_SMALL_BROOM_RIGHT_HRIZON,PROCESSED_35},
+
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_40},
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_41},
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_42},
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_43},
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_44},
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_45},
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_46},
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_47},
+
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_50},
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_51},
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_52},
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_53},
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_54},
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_55},
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_56},
+                                 {CAT_PUSH_BIG_BROOM,PROCESSED_57},
+                                };
+const int g_sweep_validate_size=14;
+training_case_t g_sweep_validate_array[]={{CAT_BIG_BROOM_RIGHT_HIGH,PROCESSED_6},
+                                          {CAT_BIG_BROOM_RIGHT_HIGH,PROCESSED_7},
+                                          {CAT_BIG_BROOM_LEFT_0,PROCESSED_104},
+                                          {CAT_BIG_BROOM_LEFT_1,PROCESSED_114},
+                                          {CAT_BIG_BROOM_RIGHT_LOW,PROCESSED_15},
+                                          {CAT_BIG_BROOM_RIGHT_LOW,PROCESSED_17},
+                                          {CAT_SMALL_BROOM_RIGHT_FORWARD,PROCESSED_23},
+                                          {CAT_SMALL_BROOM_RIGHT_FORWARD,PROCESSED_24},
+                                          {CAT_SMALL_BROOM_RIGHT_HRIZON,PROCESSED_32},
+                                          {CAT_SMALL_BROOM_RIGHT_HRIZON,PROCESSED_33},
+                                          {CAT_PUSH_BIG_BROOM,PROCESSED_45},
+                                          {CAT_PUSH_BIG_BROOM,PROCESSED_47},
+                                          {CAT_PUSH_BIG_BROOM,PROCESSED_53},
+                                          {CAT_PUSH_BIG_BROOM,PROCESSED_56}
+                                         };
+
+const int g_garbage_size=27;
+training_case_t g_garbage_array[]={{CAT_GARBAGE_0,PROCESSED_60},
+                                   {CAT_GARBAGE_0,PROCESSED_61},
+                                   {CAT_GARBAGE_1,PROCESSED_62},
+                                   {CAT_GARBAGE_1,PROCESSED_63},
+                                   {CAT_EMPTY_BIN_0,PROCESSED_70},
+                                   {CAT_EMPTY_BIN_0,PROCESSED_71},
+                                   {CAT_EMPTY_BIN_1,PROCESSED_72},
+                                   {CAT_EMPTY_BIN_1,PROCESSED_73},
+                                   {CAT_EMPTY_BIN_2,PROCESSED_74},
+                                   {CAT_EMPTY_BIN_2,PROCESSED_75},
+                                   {CAT_SCRAPE_ADV_0,PROCESSED_80},
+                                   {CAT_SCRAPE_ADV_0,PROCESSED_81},
+                                   {CAT_SCRAPE_ADV_0,PROCESSED_82},
+                                   {CAT_SCRAPE_ADV_0,PROCESSED_83},
+                                   {CAT_SCRAPE_ADV_1,PROCESSED_84},
+                                   {CAT_SCRAPE_ADV_1,PROCESSED_85},
+                                   {CAT_SCRAPE_ADV_1,PROCESSED_86},
+                                   {CAT_SCRAPE_ADV_1,PROCESSED_87},
+
+                                   {CAT_WASH_ADV,PROCESSED_90},
+                                   {CAT_WASH_ADV,PROCESSED_91},
+                                   {CAT_WASH_ADV,PROCESSED_92},
+                                   {CAT_WASH_ADV,PROCESSED_93},
+                                   {CAT_WASH_ADV,PROCESSED_94},
+                                   {CAT_WASH_ADV,PROCESSED_95},
+                                   {CAT_WASH_ADV,PROCESSED_96},
+                                   {CAT_WASH_ADV,PROCESSED_97},
+                                   {CAT_WASH_ADV,PROCESSED_98},
+                                };
+const int g_garbage_validate_size=8;
+training_case_t g_garbage_validate_array[]={ {CAT_GARBAGE_0,PROCESSED_60},
+                                             {CAT_GARBAGE_1,PROCESSED_63},
+                                             {CAT_EMPTY_BIN_0,PROCESSED_71},
+                                             {CAT_EMPTY_BIN_1,PROCESSED_73},
+                                             {CAT_SCRAPE_ADV_1,PROCESSED_85},
+                                             {CAT_SCRAPE_ADV_1,PROCESSED_86},
+                                             {CAT_WASH_ADV,PROCESSED_92},
+                                             {CAT_WASH_ADV,PROCESSED_93},
+                                           };
 void  TrainCaseFrameSweep(){
-  NeuronEngineFloat engine_frame_;//(NeuronEngineFloat::MODE_KNN);
   FrameTrainer frame_trainer;
-  FrameClassifier frame_classifier(engine_frame_);
+  //push high left
+  for(int i=0;i<g_sweep_size;++i){
+    PushToTrainFrame(g_sweep_array[i].path,g_sweep_array[i].cat,frame_trainer);
+  }
+  printf("%d samples are in the list.\n",frame_trainer.sample_list_.size());
 
-  do{
-    //push high left
-    PushToTrainFrame(PROCESSED_0,CAT_BIG_BROOM_RIGHT_HIGH,frame_trainer);
-    PushToTrainFrame(PROCESSED_1,CAT_BIG_BROOM_RIGHT_HIGH,frame_trainer);
-    PushToTrainFrame(PROCESSED_2,CAT_BIG_BROOM_RIGHT_HIGH,frame_trainer);
-    PushToTrainFrame(PROCESSED_3,CAT_BIG_BROOM_RIGHT_HIGH,frame_trainer);
-    PushToTrainFrame(PROCESSED_4,CAT_BIG_BROOM_RIGHT_HIGH,frame_trainer);
-    PushToTrainFrame(PROCESSED_5,CAT_BIG_BROOM_RIGHT_HIGH,frame_trainer);
-    PushToTrainFrame(PROCESSED_6,CAT_BIG_BROOM_RIGHT_HIGH,frame_trainer);
-    PushToTrainFrame(PROCESSED_7,CAT_BIG_BROOM_RIGHT_HIGH,frame_trainer);
+  const int engine_size=10;
+  NeuronEngineFloat engine_array[engine_size];
+  float max_accuracy=0;
+  int max_index=0;
+  for(int i=0;i<engine_size;++i){
+    FrameClassifier classifier(engine_array[i]);
+    int neurons = frame_trainer.StartTraining(engine_array[i],20);
+    float accuracy=0.0f;
 
-    PushToTrainFrame(PROCESSED_10,CAT_BIG_BROOM_RIGHT_LOW,frame_trainer);
-    PushToTrainFrame(PROCESSED_11,CAT_BIG_BROOM_RIGHT_LOW,frame_trainer);
-    PushToTrainFrame(PROCESSED_12,CAT_BIG_BROOM_RIGHT_LOW,frame_trainer);
-    PushToTrainFrame(PROCESSED_13,CAT_BIG_BROOM_RIGHT_LOW,frame_trainer);
-    PushToTrainFrame(PROCESSED_14,CAT_BIG_BROOM_RIGHT_LOW,frame_trainer);
-    PushToTrainFrame(PROCESSED_15,CAT_BIG_BROOM_RIGHT_LOW,frame_trainer);
-    PushToTrainFrame(PROCESSED_16,CAT_BIG_BROOM_RIGHT_LOW,frame_trainer);
-    PushToTrainFrame(PROCESSED_17,CAT_BIG_BROOM_RIGHT_LOW,frame_trainer);
-
-    PushToTrainFrame(PROCESSED_100,CAT_BIG_BROOM_LEFT_0,frame_trainer);
-    PushToTrainFrame(PROCESSED_101,CAT_BIG_BROOM_LEFT_0,frame_trainer);
-    PushToTrainFrame(PROCESSED_102,CAT_BIG_BROOM_LEFT_0,frame_trainer);
-    PushToTrainFrame(PROCESSED_103,CAT_BIG_BROOM_LEFT_0,frame_trainer);
-    PushToTrainFrame(PROCESSED_104,CAT_BIG_BROOM_LEFT_0,frame_trainer);
-
-    PushToTrainFrame(PROCESSED_110,CAT_BIG_BROOM_LEFT_1,frame_trainer);
-    PushToTrainFrame(PROCESSED_111,CAT_BIG_BROOM_LEFT_1,frame_trainer);
-    PushToTrainFrame(PROCESSED_112,CAT_BIG_BROOM_LEFT_1,frame_trainer);
-    PushToTrainFrame(PROCESSED_113,CAT_BIG_BROOM_LEFT_1,frame_trainer);
-    PushToTrainFrame(PROCESSED_114,CAT_BIG_BROOM_LEFT_1,frame_trainer);
-
-    PushToTrainFrame(PROCESSED_20,CAT_SMALL_BROOM_RIGHT_FORWARD,frame_trainer);
-    PushToTrainFrame(PROCESSED_21,CAT_SMALL_BROOM_RIGHT_FORWARD,frame_trainer);
-    PushToTrainFrame(PROCESSED_22,CAT_SMALL_BROOM_RIGHT_FORWARD,frame_trainer);
-    PushToTrainFrame(PROCESSED_23,CAT_SMALL_BROOM_RIGHT_FORWARD,frame_trainer);
-    PushToTrainFrame(PROCESSED_24,CAT_SMALL_BROOM_RIGHT_FORWARD,frame_trainer);
-    PushToTrainFrame(PROCESSED_25,CAT_SMALL_BROOM_RIGHT_FORWARD,frame_trainer);
-
-    PushToTrainFrame(PROCESSED_30,CAT_SMALL_BROOM_RIGHT_HRIZON,frame_trainer);
-    PushToTrainFrame(PROCESSED_31,CAT_SMALL_BROOM_RIGHT_HRIZON,frame_trainer);
-    PushToTrainFrame(PROCESSED_32,CAT_SMALL_BROOM_RIGHT_HRIZON,frame_trainer);
-    PushToTrainFrame(PROCESSED_33,CAT_SMALL_BROOM_RIGHT_HRIZON,frame_trainer);
-    PushToTrainFrame(PROCESSED_34,CAT_SMALL_BROOM_RIGHT_HRIZON,frame_trainer);
-    PushToTrainFrame(PROCESSED_35,CAT_SMALL_BROOM_RIGHT_HRIZON,frame_trainer);
-
-    PushToTrainFrame(PROCESSED_40,CAT_PUSH_BIG_BROOM,frame_trainer);
-    PushToTrainFrame(PROCESSED_41,CAT_PUSH_BIG_BROOM,frame_trainer);
-    PushToTrainFrame(PROCESSED_42,CAT_PUSH_BIG_BROOM,frame_trainer);
-    PushToTrainFrame(PROCESSED_43,CAT_PUSH_BIG_BROOM,frame_trainer);
-    PushToTrainFrame(PROCESSED_44,CAT_PUSH_BIG_BROOM,frame_trainer);
-    PushToTrainFrame(PROCESSED_45,CAT_PUSH_BIG_BROOM,frame_trainer);
-    PushToTrainFrame(PROCESSED_46,CAT_PUSH_BIG_BROOM,frame_trainer);
-    PushToTrainFrame(PROCESSED_47,CAT_PUSH_BIG_BROOM,frame_trainer);
-
-    PushToTrainFrame(PROCESSED_50,CAT_PUSH_BIG_BROOM,frame_trainer);
-    PushToTrainFrame(PROCESSED_51,CAT_PUSH_BIG_BROOM,frame_trainer);
-    PushToTrainFrame(PROCESSED_52,CAT_PUSH_BIG_BROOM,frame_trainer);
-    PushToTrainFrame(PROCESSED_53,CAT_PUSH_BIG_BROOM,frame_trainer);
-    PushToTrainFrame(PROCESSED_54,CAT_PUSH_BIG_BROOM,frame_trainer);
-    PushToTrainFrame(PROCESSED_55,CAT_PUSH_BIG_BROOM,frame_trainer);
-    PushToTrainFrame(PROCESSED_56,CAT_PUSH_BIG_BROOM,frame_trainer);
-    PushToTrainFrame(PROCESSED_57,CAT_PUSH_BIG_BROOM,frame_trainer);
-    printf("%d samples are in the list.\n",frame_trainer.sample_list_.size());
-
-    int neurons = frame_trainer.StartTraining(engine_frame_,20);
-    printf("used neurons=%d\n",neurons);
-
-
-    //positive test
-    PushToClassifyFrame(PROCESSED_6,CAT_BIG_BROOM_RIGHT_HIGH,frame_classifier);
-    PushToClassifyFrame(PROCESSED_7,CAT_BIG_BROOM_RIGHT_HIGH,frame_classifier);
-
-    PushToClassifyFrame(PROCESSED_104,CAT_BIG_BROOM_LEFT_0,frame_classifier);
-    PushToClassifyFrame(PROCESSED_114,CAT_BIG_BROOM_LEFT_1,frame_classifier);
-
-    PushToClassifyFrame(PROCESSED_15,CAT_BIG_BROOM_RIGHT_LOW,frame_classifier);
-    PushToClassifyFrame(PROCESSED_17,CAT_BIG_BROOM_RIGHT_LOW,frame_classifier);
-
-    PushToClassifyFrame(PROCESSED_24,CAT_SMALL_BROOM_RIGHT_FORWARD,frame_classifier);
-    PushToClassifyFrame(PROCESSED_23,CAT_SMALL_BROOM_RIGHT_FORWARD,frame_classifier);
-
-    PushToClassifyFrame(PROCESSED_33,CAT_SMALL_BROOM_RIGHT_HRIZON,frame_classifier);
-    PushToClassifyFrame(PROCESSED_32,CAT_SMALL_BROOM_RIGHT_HRIZON,frame_classifier);
-
-    PushToClassifyFrame(PROCESSED_45,CAT_PUSH_BIG_BROOM,frame_classifier);
-    PushToClassifyFrame(PROCESSED_47,CAT_PUSH_BIG_BROOM,frame_classifier);
-
-    PushToClassifyFrame(PROCESSED_56,CAT_PUSH_BIG_BROOM,frame_classifier);
-    PushToClassifyFrame(PROCESSED_53,CAT_PUSH_BIG_BROOM,frame_classifier);
-
-
-  }while(0);
-
-}
-void  TrainCaseFrameGarbage(){
-  NeuronEngineFloat engine_frame_;//(NeuronEngineFloat::MODE_KNN);
-  FrameTrainer frame_trainer;
-  FrameClassifier frame_classifier(engine_frame_);
-  do{
-    //push high left
-    PushToTrainFrame(PROCESSED_60,CAT_GARBAGE_0,frame_trainer);
-    PushToTrainFrame(PROCESSED_61,CAT_GARBAGE_0,frame_trainer);
-    PushToTrainFrame(PROCESSED_62,CAT_GARBAGE_1,frame_trainer);
-    PushToTrainFrame(PROCESSED_63,CAT_GARBAGE_1,frame_trainer);
-
-    PushToTrainFrame(PROCESSED_70,CAT_EMPTY_BIN_0,frame_trainer);
-    PushToTrainFrame(PROCESSED_71,CAT_EMPTY_BIN_0,frame_trainer);
-    PushToTrainFrame(PROCESSED_72,CAT_EMPTY_BIN_1,frame_trainer);
-    PushToTrainFrame(PROCESSED_73,CAT_EMPTY_BIN_1,frame_trainer);
-    PushToTrainFrame(PROCESSED_74,CAT_EMPTY_BIN_2,frame_trainer);
-    PushToTrainFrame(PROCESSED_75,CAT_EMPTY_BIN_2,frame_trainer);
-
-    PushToTrainFrame(PROCESSED_80,CAT_SCRAPE_ADV_0,frame_trainer);
-    PushToTrainFrame(PROCESSED_81,CAT_SCRAPE_ADV_0,frame_trainer);
-    PushToTrainFrame(PROCESSED_82,CAT_SCRAPE_ADV_0,frame_trainer);
-    PushToTrainFrame(PROCESSED_83,CAT_SCRAPE_ADV_0,frame_trainer);
-    PushToTrainFrame(PROCESSED_84,CAT_SCRAPE_ADV_1,frame_trainer);
-    PushToTrainFrame(PROCESSED_85,CAT_SCRAPE_ADV_1,frame_trainer);
-    PushToTrainFrame(PROCESSED_86,CAT_SCRAPE_ADV_1,frame_trainer);
-    PushToTrainFrame(PROCESSED_87,CAT_SCRAPE_ADV_1,frame_trainer);
-
-    PushToTrainFrame(PROCESSED_90,CAT_WASH_ADV,frame_trainer);
-    PushToTrainFrame(PROCESSED_91,CAT_WASH_ADV,frame_trainer);
-    PushToTrainFrame(PROCESSED_92,CAT_WASH_ADV,frame_trainer);
-    PushToTrainFrame(PROCESSED_93,CAT_WASH_ADV,frame_trainer);
-    PushToTrainFrame(PROCESSED_94,CAT_WASH_ADV,frame_trainer);
-    PushToTrainFrame(PROCESSED_95,CAT_WASH_ADV,frame_trainer);
-    PushToTrainFrame(PROCESSED_96,CAT_WASH_ADV,frame_trainer);
-    PushToTrainFrame(PROCESSED_97,CAT_WASH_ADV,frame_trainer);
-    PushToTrainFrame(PROCESSED_98,CAT_WASH_ADV,frame_trainer);
-
-    printf("%d samples are in the list.\n",frame_trainer.sample_list_.size());
-
-    int neurons = frame_trainer.StartTraining(engine_frame_,20);
-    printf("used neurons=%d\n",neurons);
-
-    //positive test
-    PushToClassifyFrame(PROCESSED_63,CAT_GARBAGE_1,frame_classifier);
-    PushToClassifyFrame(PROCESSED_61,CAT_GARBAGE_0,frame_classifier);
-
-    PushToClassifyFrame(PROCESSED_71,CAT_EMPTY_BIN_0,frame_classifier);
-    PushToClassifyFrame(PROCESSED_73,CAT_EMPTY_BIN_1,frame_classifier);
-
-    PushToClassifyFrame(PROCESSED_85,CAT_SCRAPE_ADV_1,frame_classifier);
-    PushToClassifyFrame(PROCESSED_86,CAT_SCRAPE_ADV_1,frame_classifier);
-
-    PushToClassifyFrame(PROCESSED_92,CAT_WASH_ADV,frame_classifier);
-    PushToClassifyFrame(PROCESSED_93,CAT_WASH_ADV,frame_classifier);
-
-  }while(0);
+    for(int k=0;k<g_sweep_validate_size;++k){
+      accuracy += PushToClassifyFrame(g_sweep_validate_array[k].path,g_sweep_validate_array[k].cat, classifier);
+    }
+    accuracy = accuracy/g_sweep_validate_size;
+    printf("[%d] %d neurons are used. Accuracy is %.2f\n",i,neurons,accuracy);
+    if(accuracy>max_accuracy){
+      max_accuracy = accuracy;
+      max_index = i;
+    }
+  }
+  printf("Engine[%d]'s accuracy is %.2f. %d neurons are used.\n",max_index,max_accuracy,engine_array[max_index].NeuronCount());
+  SaveEngineFloat(&engine_array[max_index],"frame_sweep_neurons.csv");
 }
 void  TrainCaseSweep(){
-  NeuronEngineFloat engine_feature_;
   WaveTrainer feature_trainer;
-  WaveClassifier feature_classifier(engine_feature_);
+  QTime time;
+  //push high left
 
-  do{
-    //push high left
-    PushToTrainFeature(PROCESSED_0,CAT_BIG_BROOM_RIGHT_HIGH,feature_trainer);
-    PushToTrainFeature(PROCESSED_1,CAT_BIG_BROOM_RIGHT_HIGH,feature_trainer);
-    PushToTrainFeature(PROCESSED_2,CAT_BIG_BROOM_RIGHT_HIGH,feature_trainer);
-    PushToTrainFeature(PROCESSED_3,CAT_BIG_BROOM_RIGHT_HIGH,feature_trainer);
-    PushToTrainFeature(PROCESSED_4,CAT_BIG_BROOM_RIGHT_HIGH,feature_trainer);
-    PushToTrainFeature(PROCESSED_5,CAT_BIG_BROOM_RIGHT_HIGH,feature_trainer);
-    PushToTrainFeature(PROCESSED_6,CAT_BIG_BROOM_RIGHT_HIGH,feature_trainer);
-    PushToTrainFeature(PROCESSED_7,CAT_BIG_BROOM_RIGHT_HIGH,feature_trainer);
+  time.start();
+  for(int i=0;i<g_sweep_size;++i){
+    PushToTrainFeature(g_sweep_array[i].path,g_sweep_array[i].cat,feature_trainer);
+  }
+  printf("It takes %d ms to push %d samples to trainer.\n",time.elapsed(),feature_trainer.sample_list_.size());
 
-    PushToTrainFeature(PROCESSED_10,CAT_BIG_BROOM_RIGHT_LOW,feature_trainer);
-    PushToTrainFeature(PROCESSED_11,CAT_BIG_BROOM_RIGHT_LOW,feature_trainer);
-    PushToTrainFeature(PROCESSED_12,CAT_BIG_BROOM_RIGHT_LOW,feature_trainer);
-    PushToTrainFeature(PROCESSED_13,CAT_BIG_BROOM_RIGHT_LOW,feature_trainer);
-    PushToTrainFeature(PROCESSED_14,CAT_BIG_BROOM_RIGHT_LOW,feature_trainer);
-    PushToTrainFeature(PROCESSED_15,CAT_BIG_BROOM_RIGHT_LOW,feature_trainer);
-    PushToTrainFeature(PROCESSED_16,CAT_BIG_BROOM_RIGHT_LOW,feature_trainer);
-    PushToTrainFeature(PROCESSED_17,CAT_BIG_BROOM_RIGHT_LOW,feature_trainer);
+  const int engine_size=10;
+  NeuronEngineFloat engine_array[engine_size];
+  float max_accuracy=0;
+  int max_index=0;
+  for(int i=0;i<engine_size;++i){
+    time.restart();
+    WaveClassifier classifier(engine_array[i]);
+    int neurons = feature_trainer.StartTraining(engine_array[i],20);
+    printf("--------------------------------------------------------\n");
+    printf("[%d] Training takes %d ms\n",i,time.elapsed());
 
-    PushToTrainFeature(PROCESSED_100,CAT_BIG_BROOM_LEFT_0,feature_trainer);
-    PushToTrainFeature(PROCESSED_101,CAT_BIG_BROOM_LEFT_0,feature_trainer);
-    PushToTrainFeature(PROCESSED_102,CAT_BIG_BROOM_LEFT_0,feature_trainer);
-    PushToTrainFeature(PROCESSED_103,CAT_BIG_BROOM_LEFT_0,feature_trainer);
+    time.restart();
+    float accuracy=0.0f;
+    for(int k=0;k<g_sweep_validate_size;++k){
+      accuracy += PushToClassifyFeature(g_sweep_validate_array[k].path,g_sweep_validate_array[k].cat, classifier);
+    }
+    accuracy = accuracy/g_sweep_validate_size;
+    printf("[%d] %d neurons are used. Accuracy is %.2f. Validation takes %d ms\n",i,neurons,accuracy,time.elapsed());
+    if(accuracy>max_accuracy){
+      max_accuracy = accuracy;
+      max_index = i;
+    }
+  }
+  printf("Engine[%d]'s accuracy is %.2f. %d neurons are used.\n",max_index,max_accuracy,engine_array[max_index].NeuronCount());
+  SaveEngineFloat(&engine_array[max_index],"feature_sweep_neurons.csv");
+}
+void  TrainCaseFrameGarbage(){
+  FrameTrainer frame_trainer;
+  for(int i=0;i<g_garbage_size;++i){
+    PushToTrainFrame(g_garbage_array[i].path,g_garbage_array[i].cat,frame_trainer);
+  }
 
-    PushToTrainFeature(PROCESSED_110,CAT_BIG_BROOM_LEFT_1,feature_trainer);
-    PushToTrainFeature(PROCESSED_111,CAT_BIG_BROOM_LEFT_1,feature_trainer);
-    PushToTrainFeature(PROCESSED_112,CAT_BIG_BROOM_LEFT_1,feature_trainer);
-    PushToTrainFeature(PROCESSED_113,CAT_BIG_BROOM_LEFT_1,feature_trainer);
+  const int engine_size=10;
+  NeuronEngineFloat engine_array[engine_size];
+  float max_accuracy=0;
+  int max_index=0;
+  for(int i=0;i<engine_size;++i){
+    FrameClassifier classifier(engine_array[i]);
+    int neurons = frame_trainer.StartTraining(engine_array[i],20);
+    float accuracy=0.0f;
 
-    PushToTrainFeature(PROCESSED_20,CAT_SMALL_BROOM_RIGHT_FORWARD,feature_trainer);
-    PushToTrainFeature(PROCESSED_21,CAT_SMALL_BROOM_RIGHT_FORWARD,feature_trainer);
-    PushToTrainFeature(PROCESSED_22,CAT_SMALL_BROOM_RIGHT_FORWARD,feature_trainer);
-    PushToTrainFeature(PROCESSED_23,CAT_SMALL_BROOM_RIGHT_FORWARD,feature_trainer);
-    PushToTrainFeature(PROCESSED_24,CAT_SMALL_BROOM_RIGHT_FORWARD,feature_trainer);
-    PushToTrainFeature(PROCESSED_25,CAT_SMALL_BROOM_RIGHT_FORWARD,feature_trainer);
-
-    PushToTrainFeature(PROCESSED_30,CAT_SMALL_BROOM_RIGHT_HRIZON,feature_trainer);
-    PushToTrainFeature(PROCESSED_31,CAT_SMALL_BROOM_RIGHT_HRIZON,feature_trainer);
-    PushToTrainFeature(PROCESSED_32,CAT_SMALL_BROOM_RIGHT_HRIZON,feature_trainer);
-    PushToTrainFeature(PROCESSED_33,CAT_SMALL_BROOM_RIGHT_HRIZON,feature_trainer);
-    PushToTrainFeature(PROCESSED_34,CAT_SMALL_BROOM_RIGHT_HRIZON,feature_trainer);
-    PushToTrainFeature(PROCESSED_35,CAT_SMALL_BROOM_RIGHT_HRIZON,feature_trainer);
-
-    PushToTrainFeature(PROCESSED_40,CAT_PUSH_BIG_BROOM,feature_trainer);
-    PushToTrainFeature(PROCESSED_41,CAT_PUSH_BIG_BROOM,feature_trainer);
-    PushToTrainFeature(PROCESSED_42,CAT_PUSH_BIG_BROOM,feature_trainer);
-    PushToTrainFeature(PROCESSED_43,CAT_PUSH_BIG_BROOM,feature_trainer);
-    PushToTrainFeature(PROCESSED_44,CAT_PUSH_BIG_BROOM,feature_trainer);
-    PushToTrainFeature(PROCESSED_45,CAT_PUSH_BIG_BROOM,feature_trainer);
-    PushToTrainFeature(PROCESSED_46,CAT_PUSH_BIG_BROOM,feature_trainer);
-    PushToTrainFeature(PROCESSED_47,CAT_PUSH_BIG_BROOM,feature_trainer);
-
-    PushToTrainFeature(PROCESSED_50,CAT_PUSH_BIG_BROOM,feature_trainer);
-    PushToTrainFeature(PROCESSED_51,CAT_PUSH_BIG_BROOM,feature_trainer);
-    PushToTrainFeature(PROCESSED_52,CAT_PUSH_BIG_BROOM,feature_trainer);
-    PushToTrainFeature(PROCESSED_53,CAT_PUSH_BIG_BROOM,feature_trainer);
-    PushToTrainFeature(PROCESSED_54,CAT_PUSH_BIG_BROOM,feature_trainer);
-    PushToTrainFeature(PROCESSED_55,CAT_PUSH_BIG_BROOM,feature_trainer);
-    PushToTrainFeature(PROCESSED_56,CAT_PUSH_BIG_BROOM,feature_trainer);
-    PushToTrainFeature(PROCESSED_57,CAT_PUSH_BIG_BROOM,feature_trainer);
-    printf("%d samples are in the list.\n",feature_trainer.sample_list_.size());
-
-    int neurons = feature_trainer.StartTraining(engine_feature_,20);
-    printf("used neurons=%d\n",neurons);
-
-
-    //positive test
-    PushToClassifyFeature(PROCESSED_6,CAT_BIG_BROOM_RIGHT_HIGH,feature_classifier);
-    PushToClassifyFeature(PROCESSED_7,CAT_BIG_BROOM_RIGHT_HIGH,feature_classifier);
-
-    PushToClassifyFeature(PROCESSED_104,CAT_BIG_BROOM_LEFT_0,feature_classifier);
-    PushToClassifyFeature(PROCESSED_114,CAT_BIG_BROOM_LEFT_1,feature_classifier);
-
-    PushToClassifyFeature(PROCESSED_15,CAT_BIG_BROOM_RIGHT_LOW,feature_classifier);
-    PushToClassifyFeature(PROCESSED_17,CAT_BIG_BROOM_RIGHT_LOW,feature_classifier);
-
-    PushToClassifyFeature(PROCESSED_24,CAT_SMALL_BROOM_RIGHT_FORWARD,feature_classifier);
-    PushToClassifyFeature(PROCESSED_23,CAT_SMALL_BROOM_RIGHT_FORWARD,feature_classifier);
-
-    PushToClassifyFeature(PROCESSED_33,CAT_SMALL_BROOM_RIGHT_HRIZON,feature_classifier);
-    PushToClassifyFeature(PROCESSED_32,CAT_SMALL_BROOM_RIGHT_HRIZON,feature_classifier);
-
-    PushToClassifyFeature(PROCESSED_45,CAT_PUSH_BIG_BROOM,feature_classifier);
-    PushToClassifyFeature(PROCESSED_47,CAT_PUSH_BIG_BROOM,feature_classifier);
-
-    PushToClassifyFeature(PROCESSED_56,CAT_PUSH_BIG_BROOM,feature_classifier);
-    PushToClassifyFeature(PROCESSED_53,CAT_PUSH_BIG_BROOM,feature_classifier);
-
-
-  }while(0);
+    for(int k=0;k<g_garbage_validate_size;++k){
+      accuracy += PushToClassifyFrame(g_garbage_validate_array[k].path,g_garbage_validate_array[k].cat, classifier);
+    }
+    accuracy = accuracy/g_garbage_validate_size;
+    printf("[%d] %d neurons are used. Accuracy is %.2f\n",i,neurons,accuracy);
+    if(accuracy>max_accuracy){
+      max_accuracy = accuracy;
+      max_index = i;
+    }
+  }
+  printf("Engine[%d]'s accuracy is %.2f. %d neurons are used.\n",max_index,max_accuracy,engine_array[max_index].NeuronCount());
+  SaveEngineFloat(&engine_array[max_index],"frame_garbage_neurons.csv");
 }
 
 void  TrainCaseGarbage(){
-  NeuronEngineFloat engine_feature_;
   WaveTrainer feature_trainer;
-  WaveClassifier feature_classifier(engine_feature_);
-  do{
-    //push high left
-    PushToTrainFeature(PROCESSED_60,CAT_GARBAGE_0,feature_trainer);
-    PushToTrainFeature(PROCESSED_61,CAT_GARBAGE_0,feature_trainer);
-    PushToTrainFeature(PROCESSED_62,CAT_GARBAGE_1,feature_trainer);
-    PushToTrainFeature(PROCESSED_63,CAT_GARBAGE_1,feature_trainer);
+  //push high left
+  for(int i=0;i<g_garbage_size;++i){
+    PushToTrainFeature(g_garbage_array[i].path,g_garbage_array[i].cat,feature_trainer);
+  }
+  printf("%d samples are in the list.\n",feature_trainer.sample_list_.size());
 
-    PushToTrainFeature(PROCESSED_70,CAT_EMPTY_BIN_0,feature_trainer);
-    PushToTrainFeature(PROCESSED_71,CAT_EMPTY_BIN_0,feature_trainer);
-    PushToTrainFeature(PROCESSED_72,CAT_EMPTY_BIN_1,feature_trainer);
-    PushToTrainFeature(PROCESSED_73,CAT_EMPTY_BIN_1,feature_trainer);
-    PushToTrainFeature(PROCESSED_74,CAT_EMPTY_BIN_2,feature_trainer);
-    PushToTrainFeature(PROCESSED_75,CAT_EMPTY_BIN_2,feature_trainer);
+  const int engine_size=10;
+  NeuronEngineFloat engine_array[engine_size];
+  float max_accuracy=0;
+  int max_index=0;
+  for(int i=0;i<engine_size;++i){
+    WaveClassifier classifier(engine_array[i]);
+    int neurons = feature_trainer.StartTraining(engine_array[i],20);
+    float accuracy=0.0f;
 
-    PushToTrainFeature(PROCESSED_80,CAT_SCRAPE_ADV_0,feature_trainer);
-    PushToTrainFeature(PROCESSED_81,CAT_SCRAPE_ADV_0,feature_trainer);
-    PushToTrainFeature(PROCESSED_82,CAT_SCRAPE_ADV_0,feature_trainer);
-    PushToTrainFeature(PROCESSED_83,CAT_SCRAPE_ADV_0,feature_trainer);
-    PushToTrainFeature(PROCESSED_84,CAT_SCRAPE_ADV_1,feature_trainer);
-    PushToTrainFeature(PROCESSED_85,CAT_SCRAPE_ADV_1,feature_trainer);
-    PushToTrainFeature(PROCESSED_86,CAT_SCRAPE_ADV_1,feature_trainer);
-    PushToTrainFeature(PROCESSED_87,CAT_SCRAPE_ADV_1,feature_trainer);
-
-    PushToTrainFeature(PROCESSED_90,CAT_WASH_ADV,feature_trainer);
-    PushToTrainFeature(PROCESSED_91,CAT_WASH_ADV,feature_trainer);
-    PushToTrainFeature(PROCESSED_92,CAT_WASH_ADV,feature_trainer);
-    PushToTrainFeature(PROCESSED_93,CAT_WASH_ADV,feature_trainer);
-    PushToTrainFeature(PROCESSED_94,CAT_WASH_ADV,feature_trainer);
-    PushToTrainFeature(PROCESSED_95,CAT_WASH_ADV,feature_trainer);
-    PushToTrainFeature(PROCESSED_96,CAT_WASH_ADV,feature_trainer);
-    PushToTrainFeature(PROCESSED_97,CAT_WASH_ADV,feature_trainer);
-    PushToTrainFeature(PROCESSED_98,CAT_WASH_ADV,feature_trainer);
-
-    printf("%d samples are in the list.\n",feature_trainer.sample_list_.size());
-
-    int neurons = feature_trainer.StartTraining(engine_feature_,20);
-    printf("used neurons=%d\n",neurons);
-
-    //positive test
-    PushToClassifyFeature(PROCESSED_63,CAT_GARBAGE_1,feature_classifier);
-    PushToClassifyFeature(PROCESSED_61,CAT_GARBAGE_0,feature_classifier);
-
-    PushToClassifyFeature(PROCESSED_71,CAT_EMPTY_BIN_0,feature_classifier);
-    PushToClassifyFeature(PROCESSED_73,CAT_EMPTY_BIN_1,feature_classifier);
-
-    PushToClassifyFeature(PROCESSED_85,CAT_SCRAPE_ADV_1,feature_classifier);
-    PushToClassifyFeature(PROCESSED_86,CAT_SCRAPE_ADV_1,feature_classifier);
-
-    PushToClassifyFeature(PROCESSED_92,CAT_WASH_ADV,feature_classifier);
-    PushToClassifyFeature(PROCESSED_93,CAT_WASH_ADV,feature_classifier);
-
-  }while(0);
+    for(int k=0;k<g_garbage_validate_size;++k){
+      accuracy += PushToClassifyFeature(g_garbage_validate_array[k].path,g_garbage_validate_array[k].cat, classifier);
+    }
+    accuracy = accuracy/g_garbage_validate_size;
+    printf("[%d] %d neurons are used. Accuracy is %.2f\n",i,neurons,accuracy);
+    if(accuracy>max_accuracy){
+      max_accuracy = accuracy;
+      max_index = i;
+    }
+  }
+  printf("Engine[%d]'s accuracy is %.2f. %d neurons are used.\n",max_index,max_accuracy,engine_array[max_index].NeuronCount());
+  SaveEngineFloat(&engine_array[max_index],"feature_garbage_neurons.csv");
 }
 
 int main(int argc, char *argv[])
 {
   (void)argc;
   (void)argv;
-  //TrainCaseFrameSweep();
+  TrainCaseFrameSweep();
   TrainCaseFrameGarbage();
-  //TrainCaseSweep();
-  //TrainCaseGarbage();
+  TrainCaseSweep();
+  TrainCaseGarbage();
 }
 
 
@@ -556,7 +496,7 @@ float PushToClassifyFrame(const char *src_path, int target_cat, FrameClassifier 
 
   float accuracy = (float)correct_frames / (float)total_frames;
 
-#if 1
+#if 0
   printf("Validating [%s] with target_cat [%2d]\n",src_path,target_cat);
   printf("[%3d/%3d] samples are correct with target [%2d]. Accuracy is [%.2f]\n",
          correct_frames,
@@ -643,7 +583,7 @@ float PushToClassifyFeature(const char *src_path, int target_cat, WaveClassifier
 
   float accuracy = (float)correct_frames / (float)total_frames;
 
-#if 1
+#if 0
   printf("Validating [%s] with target_cat [%2d]\n",src_path,target_cat);
   printf("[%3d/%3d] samples are correct with target [%2d]. Accuracy is [%.2f]\n",
          correct_frames,
@@ -665,6 +605,6 @@ float Possibility(int target_cat,WaveClassifier::result_cat_t * result_array,int
     }
   }
   float accuracy = static_cast<float>(sum)/static_cast<float>(result_len);
-  printf("Correct rate with target [%d] is [%.2f]\n",target_cat,accuracy);
+  //printf("Correct rate with target [%d] is [%.2f]\n",target_cat,accuracy);
   return accuracy;
 }

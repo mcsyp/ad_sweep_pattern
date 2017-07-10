@@ -3,5 +3,7 @@ host = 121.196.224.164
 port = 20072
 
 ; this is sweep related neuron files
-sweep_key = ../sweep_key.csv
-sweep_feature = ../sweep_feature.csv
+frame_garbage = ../frame_garbage_neurons.csv
+frame_sweep = ../frame_sweep_neurons.csv
+feature_garbage = ../feature_garbage_neurons.csv
+feature_sweep = ../feature_sweep_neurons.csv
