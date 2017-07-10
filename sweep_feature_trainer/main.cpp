@@ -34,12 +34,12 @@ using namespace qri_neuron_lib;
 #define PROCESSED_6   "../../5.data_source/20170626-nanjing-validate/correct_s_gao_left_high.csv"
 #define PROCESSED_7   "../../5.data_source/20170626-nanjing-validate/correct_s_gao_left_low.csv"
 #define PROCESSED_8   "../../5.data_source/20170626-nanjing-validate/correct_s_shidai_left_high.csv"
-int PushToTrainSelector(const char* src_path,int cat, KeyAxSelectorTrainer & trainer);
+int PushToTrainFrame(const char* src_path,int cat, KeyAxSelectorTrainer & trainer);
 float PushToClassifySelector(const char * src_path, int target_cat ,KeyAxSelectorClassifier & classifier);
 
 int PushToTrainFeature(const char* src_path,int cat, SweepFeatureTrainer & trainer);
-float PushToClassifyFeature(const char * src_path, int target_cat ,SweepFeatureClassifier & classifier);
-float Possibility(int target_cat,SweepFeatureClassifier::result_cat_t * result_array,int result_len);
+float PushToClassifyFeature(const char * src_path, int target_cat ,WaveClassifier & classifier);
+float Possibility(int target_cat,WaveClassifier::result_cat_t * result_array,int result_len);
 
 void PrintEngine(const NeuronEngineFloat &  engine);
 void PrintNeuron(const NeuronFloat *nf);
@@ -54,12 +54,12 @@ int main(int argc, char *argv[])
 
   do{
     //step1. push samples to the df list
-    PushToTrainSelector(PROCESSED_0,CAT_LEFT_HIGH,key_trainer);
-    PushToTrainSelector(PROCESSED_2,CAT_LEFT_HIGH,key_trainer);
-    PushToTrainSelector(PROCESSED_4,CAT_LEFT_HIGH,key_trainer);
-    PushToTrainSelector(PROCESSED_1,CAT_LEFT_LOW,key_trainer);
-    PushToTrainSelector(PROCESSED_3,CAT_LEFT_LOW,key_trainer);
-    PushToTrainSelector(PROCESSED_5,CAT_LEFT_LOW,key_trainer);
+    PushToTrainFrame(PROCESSED_0,CAT_LEFT_HIGH,key_trainer);
+    PushToTrainFrame(PROCESSED_2,CAT_LEFT_HIGH,key_trainer);
+    PushToTrainFrame(PROCESSED_4,CAT_LEFT_HIGH,key_trainer);
+    PushToTrainFrame(PROCESSED_1,CAT_LEFT_LOW,key_trainer);
+    PushToTrainFrame(PROCESSED_3,CAT_LEFT_LOW,key_trainer);
+    PushToTrainFrame(PROCESSED_5,CAT_LEFT_LOW,key_trainer);
 
     printf("%d samples are in the list.\n",key_trainer.sample_list_.size());
 
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
   NeuronEngineFloat engine_feature_;
 
   SweepFeatureTrainer feature_trainer(&key_classifier);
-  SweepFeatureClassifier feature_classifier(&engine_feature_,&key_classifier);
+  WaveClassifier feature_classifier(&engine_feature_,&key_classifier);
 
   do{
     //push high left
@@ -138,7 +138,7 @@ void PrintNeuron(const NeuronFloat* nf){
   printf("]\n");
 }
 
-int PushToTrainSelector(const char* src_path,int cat, KeyAxSelectorTrainer & trainer){
+int PushToTrainFrame(const char* src_path,int cat, KeyAxSelectorTrainer & trainer){
   QFile src_file(src_path);
   if(!src_file.open(QFile::ReadOnly)){
     printf("Fail to open %s.\n",src_path);
@@ -246,7 +246,7 @@ int PushToTrainFeature(const char* src_path,int cat, SweepFeatureTrainer & train
   return sample_size;
 }
 
-float PushToClassifyFeature(const char *src_path, int target_cat, SweepFeatureClassifier &classifier){
+float PushToClassifyFeature(const char *src_path, int target_cat, WaveClassifier &classifier){
   QFile src_file(src_path);
   if(!src_file.open(QFile::ReadOnly)){
     printf("Fail to open %s.\n",src_path);
@@ -259,7 +259,7 @@ float PushToClassifyFeature(const char *src_path, int target_cat, SweepFeatureCl
   int correct_frames=0;
 
   const int result_size = SweepFeatureExtractor::RAW_ROWS;
-  SweepFeatureClassifier::result_cat_t result[result_size];
+  WaveClassifier::result_cat_t result[result_size];
 
   while(!src_text.atEnd()){
     QString str_line = src_text.readLine();
@@ -276,7 +276,7 @@ float PushToClassifyFeature(const char *src_path, int target_cat, SweepFeatureCl
       if(result_len>0 && Possibility(target_cat,result,result_len)>0.5f){
         ++correct_frames;
       }
-#if 1
+#if 0
       for(int i=0;i<result_len;++i){
         qDebug()<<"["<<i<<"]: cat:"<<result[i].cat<<" frame_len:"<<result[i].frame_len;
       }
@@ -301,7 +301,7 @@ float PushToClassifyFeature(const char *src_path, int target_cat, SweepFeatureCl
 
   return accuracy;
 }
-float Possibility(int target_cat,SweepFeatureClassifier::result_cat_t * result_array,int result_len){
+float Possibility(int target_cat,WaveClassifier::result_cat_t * result_array,int result_len){
   int sum=0;
   if(result_len==0)return 0.0f;
   for(int i=0;i<result_len;++i){

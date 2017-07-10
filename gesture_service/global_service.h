@@ -9,10 +9,8 @@
 #include "configparser.h"
 enum GESTURE_TYPE{
   G_SWEEP=0x1,
-  G_PICKUP=0x2,
   G_GARBAGE=0x3,
-  G_SCRUB=0x4,
-  G_ADV_CLEAR=0x5
+  G_CLEAN=0x5
 };
 
 typedef struct gesture_result_s{

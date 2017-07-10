@@ -33,8 +33,8 @@ public:
   NeuronEngineFloat engine_key_;
   NeuronEngineFloat engine_feature_;
 protected:
-  SweepFeatureClassifier *feature_;
-  KeyAxSelectorClassifier *key_;
+  WaveClassifier *feature_;
+  FrameClassifier *key_;
 
   //gesture basic info
   QString signature_;//the task signature

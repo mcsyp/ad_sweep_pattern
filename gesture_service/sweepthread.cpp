@@ -36,10 +36,10 @@ SweepThread::SweepThread(QObject *parent) : QThread(parent){
   sweep_list.push_back(this);//save this to the global list
 
   engine_key_ = NeuronEngineFloat(NeuronEngineFloat::MODE_KNN);
-  key_ = new KeyAxSelectorClassifier(&engine_key_);
+  key_ = new FrameClassifier(&engine_key_);
 
   //step2.inti feature classifier
-  feature_ = new SweepFeatureClassifier(&engine_feature_,key_);
+  feature_ = new WaveClassifier(&engine_feature_,key_);
 }
 SweepThread::~SweepThread(){
   if(key_) delete key_;
@@ -60,12 +60,12 @@ void SweepThread::run(){
   QTextStream stream(&raw_data_);
   const int row_size = 3;
   float row_buffer[row_size];
-  const int result_size = SweepFeatureClassifier::RAW_ROWS;
+  const int result_size = WaveClassifier::RAW_ROWS;
   int cat_samples=0;
   int total_samples=0;
   int accepted_samples=0;
   int cat_counter[5]={0,0,0,0,0};
-  SweepFeatureClassifier::result_cat_t result_array[result_size];
+  WaveClassifier::result_cat_t result_array[result_size];
 
   while(!stream.atEnd()){
     QString str_line = stream.readLine();

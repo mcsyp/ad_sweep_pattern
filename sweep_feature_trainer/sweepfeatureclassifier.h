@@ -4,7 +4,7 @@
 #include "keyaxselectorclassifier.h"
 #include "sweepfeatureextractor.h"
 #include <vector>
-class SweepFeatureClassifier : public SweepFeatureExtractor{
+class WaveClassifier : public SweepFeatureExtractor{
 public:
   typedef struct result_cat_s{
     int cat;
@@ -17,8 +17,8 @@ public:
     ExceptionNullSelector=-2,
     ExceptionNullEngine=-3,
   };
-  SweepFeatureClassifier(NeuronEngineFloat *engine,KeyAxSelectorClassifier* key);
-  virtual ~SweepFeatureClassifier();
+  WaveClassifier(NeuronEngineFloat *engine,KeyAxSelectorClassifier* key);
+  virtual ~WaveClassifier();
 
   /*purpose: push to classifiy the input raw data row by row
    *input:

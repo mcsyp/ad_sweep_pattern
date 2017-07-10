@@ -9,18 +9,18 @@ using namespace qri_neuron_lib;
  * 20170626
  * song yunpeng
  ***********************************/
-SweepFeatureClassifier::SweepFeatureClassifier(NeuronEngineFloat *engine,KeyAxSelectorClassifier* key):SweepFeatureExtractor(key) {
+WaveClassifier::WaveClassifier(NeuronEngineFloat *engine,KeyAxSelectorClassifier* key):SweepFeatureExtractor(key) {
   //init raw frame
   raw_frame_= new DataFrame(RAW_ROWS,RAW_COLS);
   this->engine_feature_ = engine;
 }
 
-SweepFeatureClassifier::~SweepFeatureClassifier(){
+WaveClassifier::~WaveClassifier(){
   if(raw_frame_) delete raw_frame_;
   sample_list_.clear();
 }
 
-int SweepFeatureClassifier::PushToClassify(float row_data[], int row_len, result_cat_t result[], int result_size){
+int WaveClassifier::PushToClassify(float row_data[], int row_len, result_cat_t result[], int result_size){
   float last_raw=0.0f;
   if(row_data==NULL ||row_len<RAW_COLS)return -1;
   if(result==NULL || result_size<=0)return -1;
@@ -38,10 +38,10 @@ int SweepFeatureClassifier::PushToClassify(float row_data[], int row_len, result
     raw_frame_->Pop(RAW_DELTA);
     return ret;
   }
-  return 0;
+  return -1;
 }
 
-int SweepFeatureClassifier::Classify(DataFrame * raw_frame,result_cat_t result[],int result_size){
+int WaveClassifier::Classify(DataFrame * raw_frame,result_cat_t result[],int result_size){
   if(raw_frame==NULL || raw_frame->Columns()<RAW_COLS)return 0;
   if(engine_feature_==NULL) return 0;
 
