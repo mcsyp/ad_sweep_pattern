@@ -59,6 +59,7 @@ public:
   static void FillHead(uint16_t cmdid, uint16_t payload_len, message_head & head);
 
 signals:
+  void foundHead(int cmdid, int payload_size);
   void payloadReady(int cmdid, QByteArray & payload);
 
 private:

@@ -45,6 +45,7 @@ protected slots:
 
   void onTimeoutRetry();
   void onPayloadReady(int cmdid, QByteArray & payload);
+  void onProtocolFoundHead(int cmdid,int payload_size);
 
   void onReportReady(QString report);
 protected:
@@ -56,7 +57,10 @@ protected:
   QTimer timer_retry_;
   ServiceProtocol protocol_;
   QVector<PatternThread*> sweep_list_;
-  QMutex mutex_;
+  QMutex socket_mutex_;
+  QMutex pack_mutex_;
+
+  qint64 pack_start_;
 };
 
 #endif // ServerOpti_H

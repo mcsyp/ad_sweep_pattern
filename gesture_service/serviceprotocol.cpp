@@ -33,6 +33,7 @@ void ServiceProtocol::PushToProtocol(QByteArray & raw_data){
            memcpy((uint8_t*)&rx_message_head_,current,sizeof(rx_message_head_));
            rx_payload_size_ = rx_message_head_.len-MESSAGE_HEAD_LEN;
            rx_payload_.clear();//clear the rx payload
+           emit foundHead(rx_message_head_.cmdId,rx_payload_size_);
 #if 0
            qDebug()<<tr("[%1,%2] find a head: cmdid=%3,payload=%4\n")
                      .arg(__FUNCTION__)

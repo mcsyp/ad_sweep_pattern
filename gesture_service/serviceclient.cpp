@@ -14,6 +14,7 @@ ServiceClient::ServiceClient(QObject *parent) :QTcpSocket(parent)
   connect(&timer_retry_,SIGNAL(timeout()),this,SLOT(onTimeoutRetry()));
   connect(&protocol_,SIGNAL(payloadReady(int,QByteArray&)),
           this,SLOT(onPayloadReady(int,QByteArray&)));
+  connect(&protocol_,SIGNAL(foundHead(int,int)),this,SLOT(onProtocolFoundHead(int,int)));
 }
 
 ServiceClient *ServiceClient::Singleton(){
@@ -103,36 +104,42 @@ void ServiceClient::onPayloadReady(int cmdid, QByteArray &payload){
   QString signature = first_line[0];
   qint64 start = first_line[1].toULongLong();
   qint64 end = first_line[2].toULongLong();
-#if 0
-  qDebug()<<tr("[%1,%2]cmdid:%3,sign:%4,start:%5,end:%6")
-            .arg(__FILE__).arg(__LINE__)
-            .arg(cmdid)
-            .arg(signature)
-            .arg(start)
-            .arg(end);
-#endif
+
   //step2.extraxt data
   payload.remove(0,signature.size());
   switch(cmdid){
   case SERVER_PATTERN_REQ:
       //step1. find a valid thread
       PatternThread * t = PatternThread::Available();
-      //qDebug()<<tr("[%1,%2]Thread_%3 is ready to serve.").arg(__FILE__).arg(__LINE__).arg(t->Index());
+      t->pack_start = pack_start_;
+      t->pack_end = QDateTime::currentSecsSinceEpoch();
       t->StartTask(signature,start,end,payload);
       break;
   }
+}
+
+void ServiceClient::onProtocolFoundHead(int cmdid, int payload_size)
+{
+  switch(cmdid){
+  case SERVER_PATTERN_REQ:
+      pack_mutex_.lock();
+      pack_start_ = QDateTime::currentSecsSinceEpoch();
+      pack_mutex_.unlock();
+      break;
+  }
+
 }
 void ServiceClient::onReportReady(QString report){
   qDebug()<<tr("[%1,%2] report:").arg(__FILE__).arg(__LINE__);
   qDebug()<<report;
 
-  mutex_.lock();
+  socket_mutex_.lock();
   ServiceProtocol::message_head head;
   ServiceProtocol::FillHead(SERVER_PATTERN_ACK,report.size(),head);
   QByteArray tx_pack;
   tx_pack.append((char*)&head,sizeof(head));
   tx_pack.append(report);
   write(tx_pack);
-  mutex_.unlock();
+  socket_mutex_.unlock();
 }
 

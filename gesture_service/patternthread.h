@@ -75,6 +75,9 @@ protected:
 
   QByteArray raw_data_;
   QMap<int,int> global_map_;//from local cat to global cat
+public:
+  qint64 pack_start;
+  qint64 pack_end;
 };
 
 #endif // SWEEPSERVICE_H

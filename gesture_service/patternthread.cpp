@@ -76,6 +76,10 @@ void PatternThread::StartTask(QString& sign, qint64 start, qint64 end, QByteArra
 }
 
 void PatternThread::run(){
+  QTime task_time;
+  qint64 task_start_time = QDateTime::currentSecsSinceEpoch();
+  task_time.start();//start the time counter
+
   if(raw_data_.size()==0)return;
   //check neurons
   if(engine_frame_all_.NeuronCount()==0){
@@ -151,32 +155,38 @@ void PatternThread::run(){
             .arg(total_samples)
             .arg(freq);
 
-  if(cat_feature_count.size() || cat_frame_count.size()){
+  do{
     QTextStream report_stream;
     QString str_report;
     report_stream.setString(&str_report);
+    //task info
+    qint64 task_end_time = QDateTime::currentSecsSinceEpoch();
     //first line
-    report_stream<<signature_<<","<<start_time_<<","<<end_time_<<endl;
+    report_stream<<signature_<<","<<start_time_<<","<<end_time_<<","
+                <<pack_start<<","<<pack_end<<","
+                <<task_start_time<<","<<task_end_time<<","
+                <<task_time.elapsed()<<endl;
 
-    ReportMap report;
-    AnalyzeCount(cat_frame_count,cat_frame_samples,
-                 cat_feature_count,cat_feature_samples,
-                 report);
-    QList<int> keys = report.keys();
-    for(int i=0;i<keys.size();++i){
-      int key = keys[i];
-      report_item_t  t = report[key];
-      report_stream<<t.type<<","<<t.count<<","<<(float)(t.samples)/freq<<endl;
-      qDebug()<<tr("[%1] key:%2, count:%3, samples:%4")
-                .arg(i)
-                .arg(t.type)
-                .arg(t.count)
-                .arg(t.samples);
+    if(cat_feature_count.size() || cat_frame_count.size()){
+      ReportMap report;
+      AnalyzeCount(cat_frame_count,cat_frame_samples,
+                   cat_feature_count,cat_feature_samples,
+                   report);
+      QList<int> keys = report.keys();
+      for(int i=0;i<keys.size();++i){
+        int key = keys[i];
+        report_item_t  t = report[key];
+        report_stream<<t.type<<","<<t.count<<","<<(float)(t.samples)/freq<<endl;
+        qDebug()<<tr("[%1] key:%2, count:%3, samples:%4")
+                  .arg(i)
+                  .arg(t.type)
+                  .arg(t.count)
+                  .arg(t.samples);
+      }
     }
-
     //last step
-    if(report.size()>0) emit reportCsvReady(str_report);
-  }
+    emit reportCsvReady(str_report);
+  }while(0);
 }
 
 float PatternThread::ComputeFrequency(int samples, qint64 start, qint64 end){
