@@ -29,7 +29,7 @@ public:
     uint8_t magic_num4;
     uint8_t cmdId;
     uint32_t len;//this is the length of the total pack include head size.
-                     //e.g. len=HEAD_SIZE+PAYLOAD_SIZE
+                 //e.g. len=HEAD_SIZE+PAYLOAD_SIZE
   }message_head;
 #pragma pack()
   static constexpr int MESSAGE_HEAD_LEN = sizeof(message_head);
@@ -39,7 +39,6 @@ public:
   void PushToProtocol(QByteArray & raw_data);
 
   void Reset();
-
 
   /*purpose: find if the input data is a message header
    *input:
@@ -54,14 +53,10 @@ public:
    *input:
    * @cmdid, the command id
    * @payload_len, the length of payload, HEAD size not included
-   * @buffer, the buffer to send out
-   * @buffer_len, the length of the buffer
-   *return:
-   * length of header
-   * returns 0 if failed
+   *output:
+   * @head, the output filled message head
    */
-  static int FillHead(uint16_t cmdid, uint16_t payload_len, uint8_t * buffer, int buffer_size);
-
+  static void FillHead(uint16_t cmdid, uint16_t payload_len, message_head & head);
 
 signals:
   void payloadReady(int cmdid, QByteArray & payload);

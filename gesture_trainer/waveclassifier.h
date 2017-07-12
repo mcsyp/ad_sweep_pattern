@@ -11,6 +11,7 @@ public:
     int frame_offset;
     int frame_len;
   }result_cat_t;
+  typedef std::vector<result_cat_t> ResultList;
 
   enum Exception{
     ExceptionFailDataFrame=-1,
@@ -25,23 +26,21 @@ public:
    * @row_data, on row of raw data
    * @row_len, the length of the raw data
    *output:
-   * @result, the result array with classified results
-   * @reuslt_size, the maximum size of the result array
+   * @result_list, the result array with classified results
    *return:
-   * the length of the result array
+   * if there returns any result
    */
-  virtual int PushToClassify(float row_data[],int row_len,result_cat_t result[],int result_size);
+  virtual bool PushToClassify(float row_data[],int row_len,ResultList & result_list);
 
   /*purpose: classifiy the input Dataframe
    *input:
    * @frame, the dataframe with raw data
    *output:
-   * @result, the result array with classified results
-   * @reuslt_size, the maximum size of the result array
+   * @result_list, the result array with classified results
    *return:
-   * the length of the result array
+   * if there is a valid result
    */
-  virtual int Classify(qri_neuron_lib::DataFrame * frame,result_cat_t result[],int result_size);
+  virtual bool Classify(qri_neuron_lib::DataFrame * frame,ResultList & result_list);
 
 protected:
   //raw data frame

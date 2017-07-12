@@ -8,12 +8,6 @@ class FrameTrainer:public FrameFeatureExtractor
 {
   Q_OBJECT
 public:
-  typedef struct sample_s{
-    int cat;
-    int feature_len;
-    float feature[FEATURE_MAXNUM];
-  }sample_t;
-  typedef std::vector<sample_t> SampleList;
   static constexpr int DEFUALT_ITERATIONS=10;
 
   explicit FrameTrainer(QObject *parent=NULL);

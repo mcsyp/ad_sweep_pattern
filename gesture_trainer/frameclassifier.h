@@ -29,15 +29,15 @@ public:
    * @feature, the extracted feature
    * @feature_size, the max size of this array
    *return:
-   * the length of the feature
+   * the classified result
    */
   int Classify(qri_neuron_lib::DataFrame * frame);
-signals:
-  void resultReady(int nid_array[],int nid_len,int min_nid);
 
+  const sample_t& LastClassified();
 protected:
   NeuronEngineFloat * ptr_engine_;
   qri_neuron_lib::DataFrame* raw_frame_;
+  sample_t last_result_;
 };
 
 

@@ -8,25 +8,25 @@
 
 #define CONFIG_FILE "../config.txt"
 
-ConfigParser::ConfigMap g_configs;
+
 int main(int argc, char *argv[])
 {
   QCoreApplication a(argc, argv);
 
   //step1. load the config file
   qDebug()<<"Parsing the config file...";
+  ConfigParser::ConfigMap configs;
   ConfigParser parser;
-  if(!parser.Parse(CONFIG_FILE,g_configs)){
+  if(!parser.Parse(CONFIG_FILE,configs)){
     qDebug()<<"Fail to load the config file:"<<CONFIG_FILE<<endl;
     exit(0);
   }
 
-  //step2.setup and connet to host
-  QString hostname = g_configs["host"];
-  int hostport = g_configs["port"].remove('\"').toInt();
-  qDebug()<<"Connecting to the server:"<<hostname<<":"<<hostport;
-  ServiceClient client;
-  client.Setup(hostname,hostport);
+  ServiceClient * ptr_client = ServiceClient::Singleton();
+  if(!ptr_client->Setup(configs)){
+    qDebug()<<"Fail to setup the service client."<<endl;
+    exit(-1);
+  }
 
   return a.exec();
 }

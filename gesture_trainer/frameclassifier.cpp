@@ -15,7 +15,7 @@ FrameClassifier::~FrameClassifier(){
 
 int FrameClassifier::PushToClassify(float row_data[], int row_len){
   float last_raw=0.0f;
-  if(row_data==NULL ||row_len<RAW_COLS)return 0;
+  if(row_data==NULL ||row_len<RAW_COLS)return -1;
 
   //step1. check delta
   int ret=-1;
@@ -37,17 +37,17 @@ int FrameClassifier::Classify(DataFrame *raw_frame){
   if(ptr_engine_==NULL) return 0;
 
   //step1.extract features
-  float feature[FEATURE_MAXNUM];
-  const int nid_size = ptr_engine_->NeuronCount();
-  int nid_array[nid_size];
-  int min_nid=0;
+  sample_t feature;
+  int feature_len = ExtractFeatures(raw_frame,feature);
+  int ret = ptr_engine_->Classify(feature.feature,feature_len);
 
-  int feature_len = ExtractFeatures(raw_frame,1,feature,FEATURE_MAXNUM);
-  int nid_len = ptr_engine_->Classify(feature,feature_len,nid_array,nid_size,&min_nid);
-
-  //trigger the signal for more details
-  emit resultReady(nid_array,nid_len,min_nid);
-
-  return ptr_engine_->ReadNeuron(min_nid)->Cat();
+  //copy result
+  last_result_ = feature;
+  last_result_.cat = ret;
+  memcpy((uint8_t*)(&last_result_.feature),(uint8_t*)(&feature.feature),sizeof(float)*FEATURE_MAXNUM);
+  return ret;
+}
+const FrameClassifier::sample_t & FrameClassifier::LastClassified(){
+  return last_result_;
 }
 

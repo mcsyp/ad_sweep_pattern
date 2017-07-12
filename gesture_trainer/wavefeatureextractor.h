@@ -25,15 +25,16 @@ public:
   };
   static constexpr int FEATURE_MAXNUM=(int)(F_Num*5/4);
   static constexpr int FEATURE_WAVELEN_MIN=10;//wave extraction
-  static constexpr float FEATURE_GAP_MIN=10.0f;//preprocess delta
+
+  static constexpr float FEATURE_GAP_MIN=100.0f;//preprocess delta
   static constexpr float FEATURE_GAP_MAX=2000.0f;//preprocess delta
   static constexpr int FEATURE_GAP_AXIS=1;
 
-  static constexpr float FEATURE_SCALE_ENERGY=1.0f/800.0f; //energy extraction
-  static constexpr float FEATURE_SCALE_CROSSRATE=800.0f;
-  static constexpr float FEATURE_SCALE_CORRELATION=500.0f;
+  static constexpr float FEATURE_SCALE_ENERGY=1.0f/1000.0f; //energy extraction
+  static constexpr float FEATURE_SCALE_CROSSRATE=400.0f;
+  static constexpr float FEATURE_SCALE_CORRELATION=300.0f;
   static constexpr float FEATURE_SCALE_KUR=200.0f;
-  static constexpr float FEATURE_SCALE_SKEW=80.0f;
+  static constexpr float FEATURE_SCALE_SKEW=60.0f;
 
   static constexpr int SAMPLE_COLS=F_Num;
   static constexpr int SAMPLE_ROWS=1;

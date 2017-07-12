@@ -71,17 +71,12 @@ bool ServiceProtocol::CheckMessageHead(uint8_t * rx_buffer, int rx_len){
           rx_buffer[3]==MAGIC_NUM4);
 }
 
-int ServiceProtocol::FillHead(uint16_t cmdid, uint16_t payload_len, uint8_t * buffer, int buffer_size){
-  if(buffer==NULL || buffer_size<MESSAGE_HEAD_LEN){
-    return 0;
-  }
-  message_head * temp_ptr = (message_head*)buffer;
-  temp_ptr->cmdId = cmdid;
-  temp_ptr->len = MESSAGE_HEAD_LEN + payload_len;
-  temp_ptr->magic_num1  = MAGIC_NUM1;
-  temp_ptr->magic_num2  = MAGIC_NUM2;
-  temp_ptr->magic_num3  = MAGIC_NUM3;
-  temp_ptr->magic_num4  = MAGIC_NUM4;
-  return sizeof(message_head);
+void ServiceProtocol::FillHead(uint16_t cmdid, uint16_t payload_len, message_head & head){
+  head.cmdId = cmdid;
+  head.len = MESSAGE_HEAD_LEN + payload_len;
+  head.magic_num1  = MAGIC_NUM1;
+  head.magic_num2  = MAGIC_NUM2;
+  head.magic_num3  = MAGIC_NUM3;
+  head.magic_num4  = MAGIC_NUM4;
 }
 

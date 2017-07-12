@@ -4,6 +4,7 @@
 #include <QTextStream>
 #include <QDateTime>
 #include "global_service.h"
+ServiceClient* ServiceClient::ptr_instance_ = NULL;
 ServiceClient::ServiceClient(QObject *parent) :QTcpSocket(parent)
 {
   connect(this,SIGNAL(connected()),this,SLOT(onConnected()));
@@ -14,10 +15,18 @@ ServiceClient::ServiceClient(QObject *parent) :QTcpSocket(parent)
   connect(&protocol_,SIGNAL(payloadReady(int,QByteArray&)),
           this,SLOT(onPayloadReady(int,QByteArray&)));
 }
+
+ServiceClient *ServiceClient::Singleton(){
+  if(ptr_instance_==NULL){
+    ptr_instance_ = new ServiceClient;
+  }
+  return ptr_instance_;
+}
+
 ServiceClient::~ServiceClient(){
   //reset client
   this->disconnectFromHost();
-  for(auto iter = PatternThread::sweep_list.begin();iter!=PatternThread::sweep_list.end();++iter){
+  for(auto iter = PatternThread::pattern_list.begin();iter!=PatternThread::pattern_list.end();++iter){
     PatternThread* thread = *iter;
     if(thread){
       thread->deleteLater();
@@ -26,29 +35,39 @@ ServiceClient::~ServiceClient(){
   QThread::msleep(100);
 }
 
-bool ServiceClient::Setup(QString name, int port){
-  //step1.init sweep & load engines
-  for(int i=0;i<SWEEP_MAX_THREADS;++i){
-    QString path_sweep_key = g_configs[SWEEP_CONFIG_KEY];
-    QString path_sweep_feature = g_configs[SWEEP_CONFIG_FEATURE];
-    PatternThread * sweep_thread = new PatternThread;
-
-    if(0==LoadEngine(path_sweep_key,sweep_thread->engine_key_)){
-      qDebug()<<tr("Fail to load neurons from:%1").arg(path_sweep_key);
-      return false;
-    }
-    if(0==LoadEngine(path_sweep_feature,sweep_thread->engine_feature_)){
-      qDebug()<<tr("Fail to load neurons from:%1").arg(path_sweep_feature);
-      return false;
-    }
-
-    connect(sweep_thread,SIGNAL(resultReady(QString,int,int,int)),this,SLOT(onResultReady(QString,int,int,int)));
+bool ServiceClient::Setup(ConfigParser::ConfigMap & configs){
+  if(configs.size()==0)return false;
+  if(!configs.contains(HOST_NAME) ||
+     !configs.contains(HOST_PORT) ||
+     !configs.contains(PATTERN_THREADS)){
+    qDebug()<<tr("[%1,%2]Fail to find the key words in configs.").arg(__FILE__).arg(__LINE__);
+    return false;
   }
-  qDebug()<<tr("%1 sweep instance created.").arg(PatternThread::sweep_list.size());
+
+  //step1.init sweep & load engines
+  int pattern_threads =  configs[PATTERN_THREADS].remove('\"').toInt();
+  if(pattern_threads<=0 ||  pattern_threads>PatternThread::MAX_THREADS){
+    qDebug()<<tr("[%1,%2]Invalid pattern threads [%3]. Max number is %4")
+              .arg(__FILE__).arg(__LINE__)
+              .arg(pattern_threads)
+              .arg(PatternThread::MAX_THREADS);
+    return false;
+  }
+
+  for(int i=0;i<pattern_threads;++i){
+    PatternThread * ptr_thread = new PatternThread;
+    if(!ptr_thread->Setup(configs)){
+      qDebug()<<tr("[%1,%2] Fail to create the [%3]th thread.\n").arg(__FILE__).arg(__LINE__).arg(i);
+      return false;
+    }
+    qDebug()<<tr("[%1] pattern thread created.").arg(PatternThread::pattern_list.size());
+    connect(ptr_thread,SIGNAL(reportCsvReady(QString)),this,SLOT(onReportReady(QString)));
+  }
 
   //setp2. setup server
-  host_name_ = name;
-  host_port_ = port;
+  host_name_ = configs[HOST_NAME];
+  host_port_ = configs[HOST_PORT].remove('\"').toInt();
+  qDebug()<<"Connecting to host["<<host_name_<<":"<<host_port_<<"] ...";
   timer_retry_.start(RETRY_TIMEOUT);
   return true;
 }
@@ -103,44 +122,15 @@ void ServiceClient::onPayloadReady(int cmdid, QByteArray &payload){
       break;
   }
 }
-void ServiceClient::onResultReady(QString sign,int type,int total,int cat){
-  //qDebug()<<tr("[%1,%2] signature:%3 type:%4 total:%5  cat:%6").arg(__FILE__).arg(__LINE__).arg(sign).arg(type).arg(total).arg(cat)<<endl;
+void ServiceClient::onReportReady(QString report){
+  qDebug()<<tr("[%1,%2] report:").arg(__FILE__).arg(__LINE__);
+  qDebug()<<report;
+
+  ServiceProtocol::message_head head;
+  ServiceProtocol::FillHead(SERVER_PATTERN_ACK,report.size(),head);
+  QByteArray tx_pack;
+  tx_pack.append((char*)&head,sizeof(head));
+  tx_pack.append(report);
+  write(tx_pack);
 }
-int ServiceClient::LoadEngine(const QString& src_path,NeuronEngineFloat & engine){
-  if(src_path.isEmpty())return 0;
-  QFile src_file(src_path);
-  if(!src_file.open(QFile::ReadOnly)){
-    qDebug()<<"Fail to open file:"<<src_path;
-    return 0;
-  }
-  QTextStream src_text(&src_file);
 
-  //step1.reset engine
-  engine.ResetEngine();
-
-  engine.BeginRestoreMode();
-  while(!src_text.atEnd()){
-    QString str_record = src_text.readLine();
-    QStringList str_list = str_record.split(',');
-    if(str_list.size()<3)continue;
-
-    //read cat,min_aif, aif
-    int cat =  str_list[0].toInt();
-    int min_aif = str_list[1].toFloat();
-    int aif = str_list[2].toFloat();
-
-    //read buffer
-    const int neuron_size=1024;
-    float neuron_buffer[neuron_size];
-    int neuron_len=0;
-    for(int i=0;i<str_list.size()-3;++i){
-      neuron_buffer[i]=str_list[3+i].toFloat();
-      ++neuron_len;
-    }
-
-    //restore
-    engine.RestoreNeuron(neuron_buffer,neuron_len,cat,aif,min_aif);
-  }
-  engine.EndRestoreMode();
-  return engine.NeuronCount();
-}

@@ -57,7 +57,7 @@ int WaveFeatureExtractor::ExtractFeatures(DataFrame *raw_frame,SampleList &list)
       sample.cat=raw_frame->category_;
       sample.feature_len = F_Num;
       sample.frame_offset = wave_offset+raw_frame->offset_;
-      sample.frame_len = wave_len*3/2;
+      sample.frame_len = wave_len;
 
       const float * key_col_data = source_key_data+wave_offset;
       const float * ref_col_data = source_ref_data+wave_offset;
