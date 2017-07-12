@@ -12,7 +12,7 @@ FrameTrainer::~FrameTrainer(){
 }
 
 int FrameTrainer::PushToSample(int cat,float row_data[],int row_len){
-  float last_raw=0.0f;
+  static float last_raw=0.0f;
   if(cat<=0 || row_data==NULL || row_len<RAW_COLS) return 0;
 
   //step1. check the category
@@ -36,6 +36,7 @@ int FrameTrainer::PushToSample(int cat,float row_data[],int row_len){
   if(gap>FEATURE_GAP_MAX || gap<FEATURE_GAP_MIN){
     return 0;//not accepted
   }
+  last_raw = row_data[FEATURE_GAP_AXIS];
 
   //step2. save the input data
   raw_frame_->Push(row_data,RAW_COLS);

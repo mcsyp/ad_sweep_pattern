@@ -22,7 +22,7 @@ public:
   static constexpr int RAW_COLS=2;//FIXED!! only X and Y are used
   static constexpr int FEATURE_MAXNUM=FeatureNum*3;
 
-  static constexpr float FEATURE_GAP_MIN=100.0f;//preprocess delta
+  static constexpr float FEATURE_GAP_MIN=50.0f;//preprocess delta
   static constexpr float FEATURE_GAP_MAX=2000.0f;//preprocess delta
   static constexpr int   FEATURE_GAP_AXIS=1;
 
@@ -48,6 +48,7 @@ public:
    * the length of the feature
    */
   virtual int ExtractFeatures(qri_neuron_lib::DataFrame * raw_frame,sample_t & out_sample);
+
 protected:
   int FindKeyAxis(qri_neuron_lib::DataFrame* frame);
 private:

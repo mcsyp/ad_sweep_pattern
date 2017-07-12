@@ -6,11 +6,5 @@ port = 20072
 pattern_threads=10
 
 ; this is sweep related neuron files
-frame_sweep = ../frame_sweep_neurons.csv
-frame_garbage = ../frame_garbage_neurons.csv
-frame_wash = ../frame_wash_neurons.csv
 frame_all = ../frame_neurons.csv
-feature_sweep = ../feature_sweep_neurons.csv
-feature_garbage = ../feature_garbage_neurons.csv
-feature_wash = ../feature_wash_neurons.csv
 feature_all = ../feature_neurons.csv

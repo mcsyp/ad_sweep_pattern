@@ -26,7 +26,7 @@ public:
   static constexpr int FEATURE_MAXNUM=(int)(F_Num*5/4);
   static constexpr int FEATURE_WAVELEN_MIN=10;//wave extraction
 
-  static constexpr float FEATURE_GAP_MIN=100.0f;//preprocess delta
+  static constexpr float FEATURE_GAP_MIN=30.0f;//preprocess delta
   static constexpr float FEATURE_GAP_MAX=2000.0f;//preprocess delta
   static constexpr int FEATURE_GAP_AXIS=1;
 

@@ -14,7 +14,7 @@ FrameClassifier::~FrameClassifier(){
 }
 
 int FrameClassifier::PushToClassify(float row_data[], int row_len){
-  float last_raw=0.0f;
+  static float last_raw=0.0f;
   if(row_data==NULL ||row_len<RAW_COLS)return -1;
 
   //step1. check delta
@@ -23,6 +23,7 @@ int FrameClassifier::PushToClassify(float row_data[], int row_len){
   if(gap<FEATURE_GAP_MIN || gap>FEATURE_GAP_MAX){
     return -1;
   }
+  last_raw = row_data[FEATURE_GAP_AXIS];
 
   //step2.save the data in the frame
   raw_frame_->Push(row_data,RAW_COLS);
