@@ -8,14 +8,7 @@
 #include "frameclassifier.h"
 #include "waveclassifier.h"
 
-#define FRAME_SWEEP_NEURONS "frame_sweep"
-#define FRAME_GARBAGE_NEURONS "frame_garbage"
-#define FRAME_WASH_NEURONS "frame_wash"
 #define FRAME_ALL_NEURONS "frame_all"
-
-#define FEATURE_SWEEP_NEURONS "feature_sweep"
-#define FEATURE_GARBAGE_NEURONS "feature_garbage"
-#define FEATURE_WASH_NEURONS "feature_wash"
 #define FEATURE_ALL_NEURONS "feature_all"
 
 class PatternThread : public QThread{
@@ -59,7 +52,6 @@ signals:
 
 protected:
   virtual void run();
-  virtual void FeatureArray();
 protected:
   static float ComputeFrequency(int samples, qint64 start, qint64 end);
 
@@ -70,10 +62,6 @@ protected:
                     const QMap<int,int> &feature_samples,
                     ReportMap & out_report);
 protected:
-  WaveClassifier *ptr_feature_[ENGINE_NUM];
-  FrameClassifier * ptr_frame_[ENGINE_NUM];
-  NeuronEngineFloat engine_frame_[ENGINE_NUM];
-  NeuronEngineFloat engine_feature_[ENGINE_NUM];
 
   WaveClassifier * ptr_feature_all_;
   FrameClassifier* ptr_frame_all_;

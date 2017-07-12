@@ -5,6 +5,8 @@
 #include <QTimer>
 #include <QVector>
 
+#include <QMutex>
+
 #include <stdint.h>
 #include <vector>
 

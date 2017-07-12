@@ -126,11 +126,13 @@ void ServiceClient::onReportReady(QString report){
   qDebug()<<tr("[%1,%2] report:").arg(__FILE__).arg(__LINE__);
   qDebug()<<report;
 
+  mutex_.lock();
   ServiceProtocol::message_head head;
   ServiceProtocol::FillHead(SERVER_PATTERN_ACK,report.size(),head);
   QByteArray tx_pack;
   tx_pack.append((char*)&head,sizeof(head));
   tx_pack.append(report);
   write(tx_pack);
+  mutex_.unlock();
 }
 

@@ -39,10 +39,6 @@ PatternThread* PatternThread::Available(){
 PatternThread::PatternThread(QObject *parent) : QThread(parent){
   pattern_list.push_back(this);//save this to the global list
 
-  for(int i=0;i<ENGINE_NUM;++i){
-    ptr_feature_[i] = new WaveClassifier(engine_feature_[i]);
-    ptr_frame_[i] = new FrameClassifier(engine_frame_[i]);
-  }
   global_map_.insert(ENGINE_SWEEP,G_SWEEP);
   global_map_.insert(ENGINE_GARBAGE,G_GARBAGE);
   global_map_.insert(ENGINE_WASH,G_WASH);
@@ -53,37 +49,13 @@ PatternThread::PatternThread(QObject *parent) : QThread(parent){
 
 PatternThread::~PatternThread()
 {
-  for(int i=0;i<ENGINE_NUM;++i){
-    if(ptr_feature_[i]) delete ptr_feature_[i];
-    if(ptr_frame_[i]) delete ptr_frame_[i];
-  }
   pattern_list.removeAll(this);
 }
 bool PatternThread::Setup(ConfigParser::ConfigMap &configs){
   if(configs.size()==0)return false;
-  if(!configs.contains(FEATURE_SWEEP_NEURONS)||
-     !configs.contains(FEATURE_GARBAGE_NEURONS) ||
-     !configs.contains(FEATURE_WASH_NEURONS) ||
-     !configs.contains(FRAME_SWEEP_NEURONS)||
-     !configs.contains(FRAME_GARBAGE_NEURONS)||
-     !configs.contains(FRAME_WASH_NEURONS)){
+  if(!configs.contains(FEATURE_ALL_NEURONS)||
+     !configs.contains(FEATURE_ALL_NEURONS)){
     qDebug()<<tr("[%1,%2]Fail to find the key words in configs.").arg(__FILE__).arg(__LINE__);
-    return false;
-  }
-
-  //step1. load frame neurons
-  if(LoadEngine(configs[FRAME_SWEEP_NEURONS],engine_frame_[ENGINE_SWEEP])<=0 ||
-     LoadEngine(configs[FRAME_GARBAGE_NEURONS],engine_frame_[ENGINE_GARBAGE])<=0 ||
-     LoadEngine(configs[FRAME_WASH_NEURONS],engine_frame_[ENGINE_WASH])<=0 ){
-    qDebug()<<tr("[%1,%2]Fail to load frame neurons").arg(__FILE__).arg(__LINE__);
-    return false;
-  }
-
-  //step1. load feature neurons
-  if(LoadEngine(configs[FEATURE_SWEEP_NEURONS],engine_feature_[ENGINE_SWEEP])<=0 ||
-     LoadEngine(configs[FEATURE_GARBAGE_NEURONS],engine_feature_[ENGINE_GARBAGE])<=0 ||
-     LoadEngine(configs[FEATURE_WASH_NEURONS],engine_feature_[ENGINE_WASH])<=0){
-    qDebug()<<tr("[%1,%2]Fail to load feature neurons").arg(__FILE__).arg(__LINE__);
     return false;
   }
 
@@ -205,113 +177,6 @@ void PatternThread::run(){
     //last step
     if(report.size()>0) emit reportCsvReady(str_report);
   }
-
-}
-
-void PatternThread::FeatureArray()
-{
-  if(raw_data_.size()==0)return;
-  //check neurons
-  for(int i=0;i<ENGINE_NUM;++i){
-    if(engine_frame_[i].NeuronCount()==0){
-      qDebug()<<tr("[%1,%2] no neuron in engine_frame_%3").arg(__FILE__).arg(__LINE__).arg(i);
-      return;
-    }
-    if(engine_feature_[i].NeuronCount()==0){
-      qDebug()<<tr("[%1,%2] no neuron in engine_feature_%3").arg(__FILE__).arg(__LINE__).arg(i);
-      return;
-    }
-  }
-
-  //step1. initialize stream
-  QTextStream raw_stream(&raw_data_);
-  const int row_size = 3;//only 3 axis are required here
-  float row_buffer[row_size];
-  int total_samples=0;
-
-  QMap<int, int> cat_frame_samples;//G_TYPE, sample number
-  QMap<int, int> cat_frame_count;//G_TYPE, count
-  QMap<int, int> cat_feature_samples;//G_TYPE, sample number
-  QMap<int, int> cat_feature_count;//G_TYPE, count
-
-  //step2. parse the data
-  while(!raw_stream.atEnd()){
-    //step1 parse source data
-    QString str_line = raw_stream.readLine().remove(' ');
-    QStringList str_val_list = str_line.replace('\"',"").split(',');
-    if(str_val_list.size()<row_size)continue;
-    //prepare row data
-    for(int i=0;i<row_size;++i){
-      row_buffer[i] =str_val_list[i].toFloat();
-    }
-
-    //step1 push to sweep engine
-    for(int i=0;i<ENGINE_NUM;++i){
-      //step1. feature engine parser
-      WaveClassifier::ResultList wave_result_list;
-      if(ptr_feature_[i]->PushToClassify(row_buffer,row_size,wave_result_list)){
-        for(int k=0;k<wave_result_list.size();++k){
-          WaveClassifier::result_cat_t r = wave_result_list[k];
-          int g_type = global_map_[i];
-          if(r.cat>0){
-            cat_feature_samples[g_type]=cat_feature_samples[g_type]+r.frame_len;
-            cat_feature_count[g_type] = cat_feature_count[g_type]+1;
-          }
-        }
-      }
-      //step2.frame engine parse
-      if(ptr_frame_[i]->PushToClassify(row_buffer,row_size)>0){
-        const FrameClassifier::sample_t & last_sample = ptr_frame_[i]->LastClassified();
-        int g_type = global_map_[i];
-        cat_frame_samples[g_type] = cat_frame_samples[g_type]+last_sample.frame_len;
-        cat_frame_count[g_type] = cat_frame_count[g_type]+1;
-      }
-    }
-
-    ++total_samples;
-  }
-
-  qDebug()<<endl<<"---------------------------------------------------------";
-  qDebug()<<tr("Signature:%1").arg(signature_);
-  qDebug()<<"----------------------------------";
-  PrintResultCatMap(cat_frame_samples);
-  PrintResultCatMap(cat_frame_count);
-  qDebug()<<"----------------------------------";
-  PrintResultCatMap(cat_feature_samples);
-  PrintResultCatMap(cat_feature_count);
-
-  //step FINAL convert data into report
-  float freq = ComputeFrequency(total_samples,start_time_,end_time_);
-  if(freq<=0){
-    freq = DEFAULT_FREQUENCY;
-  }
-  qDebug()<<tr("[%1,%2]total samples are:%3, current frequency is %4")
-            .arg(__FILE__).arg(__LINE__)
-            .arg(total_samples)
-            .arg(freq);
-#if 0
-  if(cat_feature_count.size() || cat_frame_count.size()){
-    QTextStream report_stream;
-    QString str_report;
-    report_stream.setString(&str_report);
-    //first line
-    report_stream<<signature_<<","<<start_time_<<","<<end_time_<<endl;
-    //content
-    if(cat_count[0]){
-      float t = static_cast<float>(cat_samples[0])/freq;
-      report_stream<<G_SWEEP<<","<<cat_count[0]<<","<<t<<endl;
-    }
-    if(cat_count[1]){
-      float t = static_cast<float>(cat_samples[1])/freq;
-      report_stream<<G_GARBAGE<<","<<cat_count[1]<<","<<t<<endl;
-    }
-    if(cat_count[2]){
-      float t = static_cast<float>(cat_samples[2])/freq;
-      report_stream<<G_WASH<<","<<cat_count[2]<<","<<t<<endl;
-    }
-    emit reportCsvReady(str_report);
-  }while(0);
-#endif
 }
 
 float PatternThread::ComputeFrequency(int samples, qint64 start, qint64 end){
@@ -352,9 +217,11 @@ void PatternThread::AnalyzeCount(const QMap<int, int> &frame_count,
     int samples_feature = feature_samples[g_type];
 
     //process
-    int count = (count_frame>count>count_feature)?count_feature:count_frame;
+    int count = 0;
+    count = (count_frame>count>count_feature)?count_feature:count_frame;
     if(count<=min_count_array[i])continue;
-    count = (int)(0.2*count_frame+0.8*count_feature);
+    //count = (int)(0.2*count_frame+0.8*count_feature);
+    count = (count_frame>count_feature)?count_frame:count_feature;
     int samples = (int)(0.4*samples_frame+0.6*samples_feature);
     if(samples<=0)continue;
 
