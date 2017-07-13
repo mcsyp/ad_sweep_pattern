@@ -5,6 +5,19 @@ port = 20072
 ; max threads
 pattern_threads=10
 
+; experience adjust parameters
+adjust_sweep_samples = 3.8
+adjust_garbage_samples = 1.5
+adjust_wash_samples = 2.0
+
+adjust_sweep_count = 3.0
+adjust_garbage_count = 1.8
+adjust_wash_count = 1.75
+
+min_sweep_count = 8
+min_garbage_count = 2
+min_wash_count = 2
+
 ; this is sweep related neuron files
 frame_all = ../frame_neurons.csv
 feature_all = ../feature_neurons.csv

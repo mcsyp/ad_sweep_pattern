@@ -21,15 +21,12 @@ WaveClassifier::~WaveClassifier(){
 }
 
 bool WaveClassifier::PushToClassify(float row_data[], int row_len, ResultList& result_list){
-  static float last_raw=0.0f;
   if(row_data==NULL ||row_len<RAW_COLS)return false;
 
   //step1. check delta
-  float gap = fabs(row_data[FEATURE_GAP_AXIS]-last_raw);
-  if(gap<FEATURE_GAP_MIN || gap>FEATURE_GAP_MAX){
+  if(!CheckDataAccepted(row_data[0],row_data[1])){
     return false;
   }
-  last_raw = row_data[FEATURE_GAP_AXIS];
 
   //step2.save the data in the frame
   raw_frame_->Push(row_data,RAW_COLS);

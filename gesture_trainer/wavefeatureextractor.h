@@ -24,7 +24,7 @@ public:
     F_Num
   };
   static constexpr int FEATURE_MAXNUM=(int)(F_Num*5/4);
-  static constexpr int FEATURE_WAVELEN_MIN=10;//wave extraction
+  static constexpr int FEATURE_WAVELEN_MIN=5;//wave extraction
 
   static constexpr float FEATURE_GAP_MIN=30.0f;//preprocess delta
   static constexpr float FEATURE_GAP_MAX=2000.0f;//preprocess delta
@@ -35,9 +35,6 @@ public:
   static constexpr float FEATURE_SCALE_CORRELATION=300.0f;
   static constexpr float FEATURE_SCALE_KUR=200.0f;
   static constexpr float FEATURE_SCALE_SKEW=60.0f;
-
-  static constexpr int SAMPLE_COLS=F_Num;
-  static constexpr int SAMPLE_ROWS=1;
 
   static constexpr int RAW_DELTA=180;
   static constexpr int RAW_ROWS=200;
@@ -63,7 +60,8 @@ public:
    * the length of the samplelist array
    */
   virtual int ExtractFeatures(qri_neuron_lib::DataFrame * raw_frame,SampleList& list);
-
+protected:
+  bool CheckDataAccepted(float x, float y);
 private:
   //preprocess
   qri_neuron_lib::FeatureRemoveMean feature_nomean_;

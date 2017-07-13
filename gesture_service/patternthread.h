@@ -11,15 +11,22 @@
 #define FRAME_ALL_NEURONS "frame_all"
 #define FEATURE_ALL_NEURONS "feature_all"
 
+#define ADJUST_SWEEP_SAMPLES    "adjust_sweep_samples"
+#define ADJUST_SWEEP_COUNT      "adjust_sweep_count"
+
+#define ADJUST_GARBAGE_SAMPLES  "adjust_garbage_samples"
+#define ADJUST_GARBAGE_COUNT    "adjust_garbage_count"
+
+#define ADJUST_WASH_SAMPLES     "adjust_wash_samples"
+#define ADJUST_WASH_COUNT       "adjust_wash_count"
+
+#define THRESHOLD_MIN_SWEEP   "min_sweep_count"
+#define THRESHOLD_MIN_GARBAGE "min_garbage_count"
+#define THRESHOLD_MIN_WASH    "min_wash_count"
+
 class PatternThread : public QThread{
   Q_OBJECT
 public:
-  enum ENGINE_TYPE{
-    ENGINE_SWEEP=0,
-    ENGINE_GARBAGE=1,
-    ENGINE_WASH,
-    ENGINE_NUM
-  };
   typedef struct report_item_s{
     int type;
     int count;
@@ -27,16 +34,11 @@ public:
   }report_item_t;
   typedef QMap<int, report_item_t> ReportMap;//G_TYPE,report_item
 
-  static constexpr int CAT_NUMBER=3;
   typedef QVector<PatternThread*> PatternList;
   static PatternList pattern_list;
 
   static constexpr int MAX_THREADS=100;
   static constexpr int DEFAULT_FREQUENCY=25;
-
-  static constexpr int MIN_SWEEP_COUNT=10;
-  static constexpr int MIN_GARBAGE_COUNT=4;
-  static constexpr int MIN_WASH_COUNT=8;
 
   static PatternThread* Available();//get an available thread
 
@@ -74,7 +76,11 @@ protected:
   qint64 end_time_;
 
   QByteArray raw_data_;
-  QMap<int,int> global_map_;//from local cat to global cat
+  QList<int> global_map_;//from local cat to global cat
+
+  QMap<int, float>  adjust_sample_; //G_TYPE,float value
+  QMap<int, float>  adjust_count_;//G_TYPE, float value
+  QMap<int, int>    threshold_;//G_TYPE, min_value
 public:
   qint64 pack_start;
   qint64 pack_end;

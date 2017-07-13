@@ -65,3 +65,19 @@ int FrameFeatureExtractor::FindKeyAxis(DataFrame *frame)
   }
   return key_col;
 }
+
+bool FrameFeatureExtractor::CheckDataAccepted(float x, float y)
+{
+  static float last_x=0.0f;
+  static float last_y=0.0f;
+  float gap_x,gap_y;
+  gap_x = fabs(x-last_x);
+  gap_y = fabs(y-last_y);
+  if((gap_x>=FEATURE_GAP_MIN && gap_x<=FEATURE_GAP_MAX)||
+     (gap_y>=FEATURE_GAP_MIN && gap_y<=FEATURE_GAP_MAX)){
+    last_x = x;
+    last_y = y;
+    return true;
+  }
+  return false;
+}

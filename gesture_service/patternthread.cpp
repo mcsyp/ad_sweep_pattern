@@ -39,9 +39,9 @@ PatternThread* PatternThread::Available(){
 PatternThread::PatternThread(QObject *parent) : QThread(parent){
   pattern_list.push_back(this);//save this to the global list
 
-  global_map_.insert(ENGINE_SWEEP,G_SWEEP);
-  global_map_.insert(ENGINE_GARBAGE,G_GARBAGE);
-  global_map_.insert(ENGINE_WASH,G_WASH);
+  global_map_.append(G_SWEEP);
+  global_map_.append(G_GARBAGE);
+  global_map_.append(G_WASH);
 
   ptr_feature_all_ = new WaveClassifier(engine_feature_all_);
   ptr_frame_all_ = new FrameClassifier(engine_frame_all_);
@@ -51,10 +51,27 @@ PatternThread::~PatternThread()
 {
   pattern_list.removeAll(this);
 }
+
 bool PatternThread::Setup(ConfigParser::ConfigMap &configs){
   if(configs.size()==0)return false;
-  if(!configs.contains(FEATURE_ALL_NEURONS)||
+
+  if(!configs.contains(FRAME_ALL_NEURONS)||
      !configs.contains(FEATURE_ALL_NEURONS)){
+    qDebug()<<tr("[%1,%2]Fail to find the key words in configs.").arg(__FILE__).arg(__LINE__);
+    return false;
+  }
+  if(!configs.contains(ADJUST_SWEEP_SAMPLES)||
+     !configs.contains(ADJUST_SWEEP_COUNT) ||
+     !configs.contains(ADJUST_GARBAGE_SAMPLES)||
+     !configs.contains(ADJUST_GARBAGE_COUNT) ||
+     !configs.contains(ADJUST_WASH_SAMPLES)||
+     !configs.contains(ADJUST_WASH_COUNT)){
+    qDebug()<<tr("[%1,%2]Fail to find the key words in configs.").arg(__FILE__).arg(__LINE__);
+    return false;
+  }
+  if(!configs.contains(THRESHOLD_MIN_SWEEP)||
+     !configs.contains(THRESHOLD_MIN_GARBAGE) ||
+     !configs.contains(THRESHOLD_MIN_WASH)){
     qDebug()<<tr("[%1,%2]Fail to find the key words in configs.").arg(__FILE__).arg(__LINE__);
     return false;
   }
@@ -64,6 +81,28 @@ bool PatternThread::Setup(ConfigParser::ConfigMap &configs){
     qDebug()<<tr("[%1,%2]Fail to load all neurons").arg(__FILE__).arg(__LINE__);
     return false;
   }
+
+  //parse values
+  float adjust_sweep_samples= configs[ADJUST_SWEEP_SAMPLES].toFloat();
+  float adjust_garbage_samples= configs[ADJUST_GARBAGE_SAMPLES].toFloat();
+  float adjust_wash_samples= configs[ADJUST_WASH_SAMPLES].toFloat();
+  adjust_sample_.insert(G_SWEEP,adjust_sweep_samples);
+  adjust_sample_.insert(G_GARBAGE,adjust_garbage_samples);
+  adjust_sample_.insert(G_WASH,adjust_wash_samples);
+
+  float adjust_sweep_count  = configs[ADJUST_SWEEP_COUNT].toFloat();
+  float adjust_garbage_count  = configs[ADJUST_GARBAGE_COUNT].toFloat();
+  float adjust_wash_count  = configs[ADJUST_WASH_COUNT].toFloat();
+  adjust_count_.insert(G_SWEEP,adjust_sweep_count);
+  adjust_count_.insert(G_GARBAGE,adjust_garbage_count);
+  adjust_count_.insert(G_WASH,adjust_wash_count);
+
+  int min_sweep = configs[THRESHOLD_MIN_SWEEP].toInt();
+  int min_garbage = configs[THRESHOLD_MIN_GARBAGE].toInt();
+  int min_wash = configs[THRESHOLD_MIN_WASH].toInt();
+  threshold_.insert(G_SWEEP,min_sweep);
+  threshold_.insert(G_GARBAGE,min_garbage);
+  threshold_.insert(G_WASH,min_wash);
   return true;
 }
 
@@ -215,7 +254,6 @@ void PatternThread::AnalyzeCount(const QMap<int, int> &frame_count,
                                  PatternThread::ReportMap &out_report)
 {
   out_report.clear();
-  int min_count_array[]={MIN_SWEEP_COUNT,MIN_GARBAGE_COUNT,MIN_WASH_COUNT};
   for(int i=0;i<global_map_.size();++i){
     int g_type = global_map_[i];
     if(g_type==0)continue;
@@ -227,20 +265,28 @@ void PatternThread::AnalyzeCount(const QMap<int, int> &frame_count,
     int samples_feature = feature_samples[g_type];
 
     //process
-    int count = 0;
-    count = (count_frame>count>count_feature)?count_feature:count_frame;
-    if(count<=min_count_array[i])continue;
-    //count = (int)(0.2*count_frame+0.8*count_feature);
-    count = (count_frame>count_feature)?count_frame:count_feature;
-    int samples = (int)(0.4*samples_frame+0.6*samples_feature);
-    if(samples<=0)continue;
+    int min_count = (count_frame>count_feature)?count_feature:count_frame;
+    int max_count = (count_frame>count_feature)?count_frame:count_feature;
+    int max_samples = (samples_frame>samples_feature)?samples_frame:samples_feature;
+    qDebug()<<tr("[%1,%2] type:%3, count: %4, samples:%5").arg(__FILE__).arg(__LINE__).arg(g_type).arg(max_count).arg(max_samples);
+    qDebug()<<tr("[%1,%2] c_frame:%3,c_feature:%4,s_frame:%5,s_feature:%6")
+              .arg(__FILE__).arg(__LINE__)
+              .arg(count_frame).arg(count_feature).arg(samples_frame).arg(samples_feature);
+
+    if(min_count<threshold_[g_type]){
+      continue;
+    }
+
+    if(max_samples<=0){
+      continue;
+    }
 
     //insert item
     report_item_t item;
     item.type=g_type;
-    item.samples=samples;
-    item.count = count;
-    out_report.insert(g_type,item);
+    item.samples=max_samples*adjust_sample_[g_type];
+    item.count = max_count*adjust_count_[g_type];
+     out_report.insert(g_type,item);
   }
 }
 

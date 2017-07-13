@@ -120,6 +120,9 @@ using namespace qri_neuron_lib;
 #define PROCESSED_81   "../20170707-sound/scrape_adv/left_crouch_forward_1.csv"
 #define PROCESSED_82   "../20170707-sound/scrape_adv/left_crouch_horizon_0.csv"
 #define PROCESSED_83   "../20170707-sound/scrape_adv/left_crouch_horizon_1.csv"
+#define PROCESSED_200   "../20170707-sound/scrape_adv/dull_stand_vertical_0.csv"
+#define PROCESSED_201   "../20170707-sound/scrape_adv/dull_stand_vertical_1.csv"
+
 #define CAT_SCRAPE_ADV_1 320
 #define PROCESSED_84   "../20170707-sound/scrape_adv/right_crouch_forward_0.csv"
 #define PROCESSED_85   "../20170707-sound/scrape_adv/right_crouch_forward_1.csv"
@@ -233,7 +236,7 @@ training_case_t g_sweep_validate_array[]={{CAT_BIG_BROOM_0,PROCESSED_6},
                                           {CAT_PUSH_BIG_BROOM_0,PROCESSED_56}
                                          };
 
-const int g_wash_size=23;
+const int g_wash_size=25;
 training_case_t g_wash_array[]={{CAT_WASH_BIN_0,PROCESSED_70},
                                    {CAT_WASH_BIN_0,PROCESSED_71},
                                    {CAT_WASH_BIN_1,PROCESSED_72},
@@ -242,6 +245,8 @@ training_case_t g_wash_array[]={{CAT_WASH_BIN_0,PROCESSED_70},
                                    {CAT_WASH_BIN_2,PROCESSED_75},
                                    {CAT_SCRAPE_ADV_0,PROCESSED_80},
                                    {CAT_SCRAPE_ADV_0,PROCESSED_81},
+                                   {CAT_SCRAPE_ADV_0,PROCESSED_200},
+                                   {CAT_SCRAPE_ADV_0,PROCESSED_201},
                                    {CAT_SCRAPE_ADV_0,PROCESSED_82},
                                    {CAT_SCRAPE_ADV_0,PROCESSED_83},
                                    {CAT_SCRAPE_ADV_1,PROCESSED_84},

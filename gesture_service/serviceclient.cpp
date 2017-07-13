@@ -12,8 +12,8 @@ ServiceClient::ServiceClient(QObject *parent) :QTcpSocket(parent)
   connect(this,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
 
   connect(&timer_retry_,SIGNAL(timeout()),this,SLOT(onTimeoutRetry()));
-  connect(&protocol_,SIGNAL(payloadReady(int,QByteArray&)),
-          this,SLOT(onPayloadReady(int,QByteArray&)));
+
+  connect(&protocol_,SIGNAL(payloadReady(int,QByteArray&)),this,SLOT(onPayloadReady(int,QByteArray&)));
   connect(&protocol_,SIGNAL(foundHead(int,int)),this,SLOT(onProtocolFoundHead(int,int)));
 }
 
@@ -105,6 +105,18 @@ void ServiceClient::onPayloadReady(int cmdid, QByteArray &payload){
   qint64 start = first_line[1].toULongLong();
   qint64 end = first_line[2].toULongLong();
 
+  //test step
+#if 0
+  do{
+    QString str_csv;
+    QTextStream csv_stream(&str_csv);
+    csv_stream<<signature<<","<<start<<","<<end<<"test only"<<end;
+    csv_stream<<"0x1,5,23"<<endl;
+    csv_stream<<"0x2,3,6"<<endl;
+    this->write(str_csv.toLatin1());
+  }while(0);
+#endif
+
   //step2.extraxt data
   payload.remove(0,signature.size());
   switch(cmdid){
@@ -113,7 +125,7 @@ void ServiceClient::onPayloadReady(int cmdid, QByteArray &payload){
       PatternThread * t = PatternThread::Available();
       t->pack_start = pack_start_;
       t->pack_end = QDateTime::currentSecsSinceEpoch();
-      qDebug()<<tr("[%1,%2] it takes %3 secs to receive this pack.").arg(__FILE__).arg(__LINE__).arg(t->pack_end-t->pack_start);
+      //qDebug()<<tr("[%1,%2] it takes %3 secs to receive this pack.").arg(__FILE__).arg(__LINE__).arg(t->pack_end-t->pack_start);
       t->StartTask(signature,start,end,payload);
       break;
   }
@@ -126,7 +138,7 @@ void ServiceClient::onProtocolFoundHead(int cmdid, int payload_size)
       pack_mutex_.lock();
       pack_start_ = QDateTime::currentSecsSinceEpoch();
       pack_mutex_.unlock();
-      qDebug()<<endl<<tr("[%1,%2] found [DATA HEAD]. Payload size is:%3").arg(__FILE__).arg(__LINE__).arg(payload_size);
+      //qDebug()<<endl<<tr("[%1,%2] found [DATA HEAD]. Payload size is:%3").arg(__FILE__).arg(__LINE__).arg(payload_size);
       break;
   }
 

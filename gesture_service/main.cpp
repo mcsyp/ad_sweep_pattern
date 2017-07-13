@@ -7,7 +7,7 @@
 #include "configparser.h"
 #include <QDir>
 
-#define CONFIG_FILE "config.txt"
+#define CONFIG_FILE "../config.txt"
 
 
 int main(int argc, char *argv[])

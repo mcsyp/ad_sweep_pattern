@@ -20,11 +20,10 @@ public:
   static constexpr int RAW_ROWS=100;
   static constexpr int RAW_DELTA=80;
   static constexpr int RAW_COLS=2;//FIXED!! only X and Y are used
-  static constexpr int FEATURE_MAXNUM=FeatureNum*3;
+  static constexpr int FEATURE_MAXNUM=FeatureNum*3+5;
 
   static constexpr float FEATURE_GAP_MIN=50.0f;//preprocess delta
   static constexpr float FEATURE_GAP_MAX=2000.0f;//preprocess delta
-  static constexpr int   FEATURE_GAP_AXIS=1;
 
   static constexpr float FEATURE_SCALE_ENERGY=1.0f/1000.0f; //energy extraction
   static constexpr float FEATURE_SCALE_CROSSRATE=200.0f;
@@ -51,6 +50,8 @@ public:
 
 protected:
   int FindKeyAxis(qri_neuron_lib::DataFrame* frame);
+  bool CheckDataAccepted(float x, float y);
+
 private:
   //feature extraction
   qri_neuron_lib::FeatureAverageEnergy feature_energy_;

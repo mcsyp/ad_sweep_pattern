@@ -8,15 +8,30 @@
 
 int LoadEngine(const char* src_path,NeuronEngineFloat & engine);
 void PushToClassifyFeature(const char *src_path, WaveClassifier &classifier);
+void PushToClassifyFrame(const char *src_path, FrameClassifier &classifier);
 int main(int argc, char *argv[])
 {
   QCoreApplication a(argc, argv);
-  NeuronEngineFloat engine;
-  WaveClassifier classifier(engine);
-  LoadEngine("../feature_neurons.csv",engine);
-  printf("loaded neuros:%d\n",engine.NeuronCount());
+  //feature classifier
+  NeuronEngineFloat engine_feature;
+  WaveClassifier classifier_feature(engine_feature);
 
-  PushToClassifyFeature("../../863137003291495_2017-07-12 19-28-00_2017-07-12 19-35-00.csv",classifier);
+  //frame classifier
+  NeuronEngineFloat engine_frame;
+  FrameClassifier classifier_frame(engine_frame);
+
+  LoadEngine("../feature_neurons.csv",engine_feature);
+  printf("loaded neuros:%d\n",engine_feature.NeuronCount());
+  LoadEngine("../frame_neurons.csv",engine_frame);
+  printf("loaded neuros:%d\n",engine_frame.NeuronCount());
+
+
+  printf("Feature classifer:\n");
+  PushToClassifyFeature("../../863137003294663_2017-07-13 18-28-00_2017-07-13 18-30-00.csv",classifier_feature);
+  printf("\nFrame classifier:\n");
+  PushToClassifyFrame("../../863137003294663_2017-07-13 18-28-00_2017-07-13 18-30-00.csv",classifier_frame);
+
+
   printf("Classification done.");
   return 0;
 }
@@ -67,7 +82,7 @@ void PushToClassifyFeature(const char *src_path, WaveClassifier &classifier){
   }
   QTextStream src_text(&src_file);
 
-  float row_data[FrameFeatureExtractor::RAW_COLS];
+  float row_data[WaveFeatureExtractor::RAW_COLS];
 
   while(!src_text.atEnd()){
     QString str_line = src_text.readLine();
@@ -75,15 +90,44 @@ void PushToClassifyFeature(const char *src_path, WaveClassifier &classifier){
     //step1. analyze the row data
     str_line.replace('\"',"");
     QStringList str_data = str_line.split(",");
-    for(int i=0;i<FrameFeatureExtractor::RAW_COLS;++i){
+    for(int i=0;i<WaveFeatureExtractor::RAW_COLS;++i){
       row_data[i] = str_data.at(i).toFloat();
     }
     WaveClassifier::ResultList result_list;
-    if(classifier.PushToClassify(row_data,FrameFeatureExtractor::RAW_COLS,result_list)){
+    if(classifier.PushToClassify(row_data,WaveFeatureExtractor::RAW_COLS,result_list)){
       for(int i=0;i<result_list.size();++i){
         WaveClassifier::result_cat_t result  =  result_list[i];
         printf("[%d] cat:%d samples:%d\n",i,result.cat,result.frame_len);
       }
+    }
+  }
+
+  src_file.close();
+}
+void PushToClassifyFrame(const char *src_path, FrameClassifier &classifier){
+  QFile src_file(src_path);
+  if(!src_file.open(QFile::ReadOnly)){
+    printf("Fail to open %s.\n",src_path);
+    return;
+  }
+  QTextStream src_text(&src_file);
+
+  int row_size =FrameFeatureExtractor::RAW_COLS;
+  float row_data[row_size];
+
+  while(!src_text.atEnd()){
+    QString str_line = src_text.readLine();
+
+    //step1. analyze the row data
+    str_line.replace('\"',"");
+    QStringList str_data = str_line.split(",");
+    for(int i=0;i<row_size;++i){
+      row_data[i] = str_data.at(i).toFloat();
+    }
+
+    if(classifier.PushToClassify(row_data,row_size)>0){
+      FrameClassifier::sample_t  last_sample = classifier.LastClassified();
+      printf("Frame classify cat:%d samples:%d\n",last_sample.cat,last_sample.frame_len);
     }
   }
 

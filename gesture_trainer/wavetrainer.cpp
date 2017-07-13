@@ -20,7 +20,6 @@ void WaveTrainer::Reset(){
 }
 
 bool WaveTrainer::PushToSample(int cat, const float *row_data, int row_len){
-  static float last_data=0.0f;
   if(cat<=0 || row_data==NULL || row_len<RAW_COLS) return false;
 
   //step1. check the category
@@ -33,15 +32,12 @@ bool WaveTrainer::PushToSample(int cat, const float *row_data, int row_len){
     //step2. update cat info and reset frame
     raw_frame_->category_ = cat;
     raw_frame_->Clear();
-    last_data=0.0f;//reset the last_data
   }
 
   //delta check
-  float gap = fabs(row_data[FEATURE_GAP_AXIS]-last_data);
-  if(gap<FEATURE_GAP_MIN || gap>FEATURE_GAP_MAX){
+  if(!CheckDataAccepted(row_data[0],row_data[1])){
     return false;
   }
-  last_data =  row_data[FEATURE_GAP_AXIS];//if passed save the data
 
   //step2. save the input data
   raw_frame_->Push(row_data,RAW_COLS);

@@ -14,17 +14,14 @@ FrameClassifier::~FrameClassifier(){
 }
 
 int FrameClassifier::PushToClassify(float row_data[], int row_len){
-  static float last_raw=0.0f;
   if(row_data==NULL ||row_len<RAW_COLS)return -1;
 
   //step1. check delta
-  int ret=-1;
-  float gap = fabs(row_data[FEATURE_GAP_AXIS]-last_raw);
-  if(gap<FEATURE_GAP_MIN || gap>FEATURE_GAP_MAX){
+  if(!CheckDataAccepted(row_data[0],row_data[1])){
     return -1;
   }
-  last_raw = row_data[FEATURE_GAP_AXIS];
 
+  int ret=-1;
   //step2.save the data in the frame
   raw_frame_->Push(row_data,RAW_COLS);
   if(raw_frame_->Full()){

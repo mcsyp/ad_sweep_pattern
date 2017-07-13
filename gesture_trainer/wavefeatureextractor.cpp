@@ -82,3 +82,18 @@ int WaveFeatureExtractor::ExtractFeatures(DataFrame *raw_frame,SampleList &list)
   return list.size();
 }
 
+bool WaveFeatureExtractor::CheckDataAccepted(float x, float y)
+{
+  static float last_x=0.0f;
+  static float last_y=0.0f;
+
+  float gap_x = fabs(x-last_x);
+  float gap_y = fabs(y-last_y);
+  if((gap_x>=FEATURE_GAP_MIN && gap_x<=FEATURE_GAP_MAX)||
+     (gap_y>=FEATURE_GAP_MIN && gap_y<=FEATURE_GAP_MAX)){
+    last_x = x;
+    last_y = y;
+    return true;
+  }
+  return false;
+}

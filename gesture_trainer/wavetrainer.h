@@ -5,7 +5,7 @@
 class WaveTrainer: public WaveFeatureExtractor{
   Q_OBJECT
 public:
-  static constexpr int DEFUALT_ITERATIONS=8;
+  static constexpr int DEFUALT_ITERATIONS=6;
 
   explicit WaveTrainer(QObject* parent=NULL);
 

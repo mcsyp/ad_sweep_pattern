@@ -43,6 +43,7 @@ protected slots:
   void onReadyRead();
 
   void onTimeoutRetry();
+
   void onPayloadReady(int cmdid, QByteArray & payload);
   void onProtocolFoundHead(int cmdid,int payload_size);
 
@@ -53,7 +54,9 @@ protected:
 protected:
   QString host_name_;
   int host_port_;
+
   QTimer timer_retry_;
+
   ServiceProtocol protocol_;
   QVector<PatternThread*> sweep_list_;
   QMutex socket_mutex_;

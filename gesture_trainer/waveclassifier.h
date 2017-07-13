@@ -13,11 +13,6 @@ public:
   }result_cat_t;
   typedef std::vector<result_cat_t> ResultList;
 
-  enum Exception{
-    ExceptionFailDataFrame=-1,
-    ExceptionNullSelector=-2,
-    ExceptionNullEngine=-3,
-  };
   explicit WaveClassifier(NeuronEngineFloat &engine,QObject* parent=NULL);
   virtual ~WaveClassifier();
 

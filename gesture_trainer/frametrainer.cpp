@@ -12,7 +12,6 @@ FrameTrainer::~FrameTrainer(){
 }
 
 int FrameTrainer::PushToSample(int cat,float row_data[],int row_len){
-  static float last_raw=0.0f;
   if(cat<=0 || row_data==NULL || row_len<RAW_COLS) return 0;
 
   //step1. check the category
@@ -28,15 +27,13 @@ int FrameTrainer::PushToSample(int cat,float row_data[],int row_len){
     //step2. update cat info and reset frame
     raw_frame_->category_ = cat;
     raw_frame_->Clear();
-    last_raw=0;
   }
 
   //step2. check the delta
-  float gap = fabs(row_data[FEATURE_GAP_AXIS]-last_raw);
-  if(gap>FEATURE_GAP_MAX || gap<FEATURE_GAP_MIN){
-    return 0;//not accepted
+  if(!CheckDataAccepted(row_data[0],row_data[1])){
+    return 0;
   }
-  last_raw = row_data[FEATURE_GAP_AXIS];
+
 
   //step2. save the input data
   raw_frame_->Push(row_data,RAW_COLS);
