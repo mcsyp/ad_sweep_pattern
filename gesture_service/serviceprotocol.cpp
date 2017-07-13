@@ -34,13 +34,6 @@ void ServiceProtocol::PushToProtocol(QByteArray & raw_data){
            rx_payload_size_ = rx_message_head_.len-MESSAGE_HEAD_LEN;
            rx_payload_.clear();//clear the rx payload
            emit foundHead(rx_message_head_.cmdId,rx_payload_size_);
-#if 0
-           qDebug()<<tr("[%1,%2] find a head: cmdid=%3,payload=%4\n")
-                     .arg(__FUNCTION__)
-                     .arg(__LINE__)
-                     .arg(rx_message_head_.cmdId)
-                     .arg(rx_payload_size_);
-#endif
            //step2.update  the state
            rx_state_ = RxStateProcessing;
 

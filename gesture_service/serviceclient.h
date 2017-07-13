@@ -23,7 +23,6 @@ protected:
   explicit ServiceClient(QObject *parent = 0);
 
 public:
-  static constexpr int RX_MAX_SIZE=4096;
   static constexpr int RETRY_TIMEOUT=3000;
   static constexpr int SIGNATURE_COLS=3;
 

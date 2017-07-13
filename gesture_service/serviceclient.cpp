@@ -89,7 +89,7 @@ void ServiceClient::onDisconnected(){
 }
 
 void ServiceClient::onReadyRead(){
-  QByteArray rx_raw = read(RX_MAX_SIZE);
+  QByteArray rx_raw = readAll();
   //qDebug()<<tr("[%1,%2]rx size:%3").arg(__FILE__).arg(__LINE__).arg(rx_raw.size());
   protocol_.PushToProtocol(rx_raw);
 }
@@ -113,6 +113,7 @@ void ServiceClient::onPayloadReady(int cmdid, QByteArray &payload){
       PatternThread * t = PatternThread::Available();
       t->pack_start = pack_start_;
       t->pack_end = QDateTime::currentSecsSinceEpoch();
+      qDebug()<<tr("[%1,%2] it takes %3 secs to receive this pack.").arg(__FILE__).arg(__LINE__).arg(t->pack_end-t->pack_start);
       t->StartTask(signature,start,end,payload);
       break;
   }
@@ -125,6 +126,7 @@ void ServiceClient::onProtocolFoundHead(int cmdid, int payload_size)
       pack_mutex_.lock();
       pack_start_ = QDateTime::currentSecsSinceEpoch();
       pack_mutex_.unlock();
+      qDebug()<<endl<<tr("[%1,%2] found [DATA HEAD]. Payload size is:%3").arg(__FILE__).arg(__LINE__).arg(payload_size);
       break;
   }
 

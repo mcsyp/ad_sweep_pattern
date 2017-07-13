@@ -5,6 +5,7 @@
 #include "serviceclient.h"
 #include "qrineuronlib.h"
 #include "configparser.h"
+#include <QDir>
 
 #define CONFIG_FILE "config.txt"
 
@@ -13,6 +14,7 @@ int main(int argc, char *argv[])
 {
   QCoreApplication a(argc, argv);
 
+  qDebug()<<"Current working dir is:"<<QDir::currentPath();
   //step1. load the config file
   qDebug()<<"Parsing the config file...";
   ConfigParser::ConfigMap configs;
