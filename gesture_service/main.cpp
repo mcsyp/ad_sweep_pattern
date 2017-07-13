@@ -6,7 +6,7 @@
 #include "qrineuronlib.h"
 #include "configparser.h"
 
-#define CONFIG_FILE "../config.txt"
+#define CONFIG_FILE "config.txt"
 
 
 int main(int argc, char *argv[])
