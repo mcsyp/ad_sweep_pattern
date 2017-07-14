@@ -28,7 +28,6 @@ public:
 
   static constexpr float FEATURE_GAP_MIN=30.0f;//preprocess delta
   static constexpr float FEATURE_GAP_MAX=2000.0f;//preprocess delta
-  static constexpr int FEATURE_GAP_AXIS=1;
 
   static constexpr float FEATURE_SCALE_ENERGY=1.0f/1000.0f; //energy extraction
   static constexpr float FEATURE_SCALE_CROSSRATE=400.0f;

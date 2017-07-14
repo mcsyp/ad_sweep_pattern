@@ -265,7 +265,7 @@ void PatternThread::AnalyzeCount(const QMap<int, int> &frame_count,
     int samples_feature = feature_samples[g_type];
 
     //process
-    int min_count = (count_frame>count_feature)?count_feature:count_frame;
+    int mid_count = (count_frame+count_feature)/2;
     int max_count = (count_frame>count_feature)?count_frame:count_feature;
     int max_samples = (samples_frame>samples_feature)?samples_frame:samples_feature;
     qDebug()<<tr("[%1,%2] type:%3, count: %4, samples:%5").arg(__FILE__).arg(__LINE__).arg(g_type).arg(max_count).arg(max_samples);
@@ -273,7 +273,7 @@ void PatternThread::AnalyzeCount(const QMap<int, int> &frame_count,
               .arg(__FILE__).arg(__LINE__)
               .arg(count_frame).arg(count_feature).arg(samples_frame).arg(samples_feature);
 
-    if(min_count<threshold_[g_type]){
+    if(mid_count<threshold_[g_type]){
       continue;
     }
 
@@ -297,7 +297,6 @@ int PatternThread::LoadEngine(const QString& src_path,NeuronEngineFloat & engine
     qDebug()<<tr("[%1,%2]Fail to open file %3").arg(__FILE__).arg(__LINE__).arg(src_path);
     return 0;
   }
-  //qDebug()<<tr("[%1,%2]Loading neurons from %3").arg(__FILE__).arg(__LINE__).arg(src_path);
   QTextStream src_text(&src_file);
 
   //step1.reset engine

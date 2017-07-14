@@ -110,10 +110,17 @@ void ServiceClient::onPayloadReady(int cmdid, QByteArray &payload){
   do{
     QString str_csv;
     QTextStream csv_stream(&str_csv);
-    csv_stream<<signature<<","<<start<<","<<end<<"test only"<<end;
+    csv_stream<<signature<<","<<start<<","<<end<<endl;
     csv_stream<<"0x1,5,23"<<endl;
     csv_stream<<"0x2,3,6"<<endl;
-    this->write(str_csv.toLatin1());
+
+    ServiceProtocol::message_head head;
+    ServiceProtocol::FillHead(SERVER_PATTERN_ACK,str_csv.size(),head);
+    QByteArray tx_pack;
+    tx_pack.append((char*)&head,sizeof(head));
+    tx_pack.append(str_csv);
+
+    this->write(tx_pack);
   }while(0);
 #endif
 
