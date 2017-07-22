@@ -57,10 +57,6 @@ void PatternThread::run(){
   //step2. classify the result
   MultiPatternService::ResultMap out_map;
   int total_samples = multi_pattern_.Classify(raw_csv_,out_map);
-  if(out_map.size()==0 || total_samples==0){
-    //qDebug()<<endl<<tr("[%1,%2]No available type classified").arg(__FILE__).arg(__LINE__);
-    return;
-  }
 
 
   //step4. compute the frequency
