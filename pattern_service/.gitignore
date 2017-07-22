@@ -1,0 +1,8 @@
+*.user
+.DS_Store
+*.Debug
+*.Release
+*.stash
+Makefile
+build-*
+*.pro.user

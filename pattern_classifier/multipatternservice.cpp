@@ -1,0 +1,241 @@
+#include "multipatternservice.h"
+#include <QTextStream>
+#include <QStringList>
+#include <QDebug>
+
+
+using namespace qri_neuron_lib;
+using namespace std;
+using namespace feature_engine;
+
+MultiPatternService::MultiPatternService(QObject* parent)
+  :QObject(parent),
+   feature_basic_({FrameFeatureExtractor::RAW_ROWS,FrameFeatureExtractor::RAW_COLS,FrameFeatureExtractor::RAW_DELTA},
+                  {FrameFeatureExtractor::FEATURE_GAP_MIN,FrameFeatureExtractor::FEATURE_GAP_MAX})
+{
+  //init engine
+  NeuronEngineFloat* sweep_engine = new NeuronEngineFloat;
+  NeuronEngineFloat* garbage_engine = new NeuronEngineFloat;
+  NeuronEngineFloat* wash_engine = new NeuronEngineFloat;
+  engine_map_.insert(P_SWEEP,sweep_engine);
+  engine_map_.insert(P_GARBAGE,garbage_engine);
+  engine_map_.insert(P_WASH,wash_engine);
+
+  //init frame feature calssifier
+  FrameFeatureClassifier* sweep_classifier= new FrameFeatureClassifier({SWEEP_MIN_WAVE,SWEEP_MAX_WAVE},*sweep_engine);
+  FrameFeatureClassifier* garbage_classifier= new FrameFeatureClassifier({GARBAGE_MIN_WAVE,GARBAGE_MAX_WAVE},*garbage_engine);
+  FrameFeatureClassifier* wash_classifier= new FrameFeatureClassifier({WASH_MIN_WAVE,WASH_MAX_WAVE},*wash_engine);
+  classifier_map_.insert(P_SWEEP,sweep_classifier);
+  classifier_map_.insert(P_GARBAGE,garbage_classifier);
+  classifier_map_.insert(P_WASH,wash_classifier);
+
+  //start the patternd service
+  this->ptr_raw_frame_ = new DataFrame(feature_basic_.Window().rows,feature_basic_.Window().cols);
+  this->adjust_percentile_times_ = ADJUST_PERCETILE;
+
+  //init the threshold
+  this->threshold_percent_.insert(P_SWEEP, 0.08f);
+  this->threshold_percent_.insert(P_GARBAGE,0.08f);
+  this->threshold_percent_.insert(P_WASH,0.08f);
+}
+
+MultiPatternService::~MultiPatternService()
+{
+  if(this->ptr_raw_frame_)delete this->ptr_raw_frame_;
+}
+
+bool MultiPatternService::Setup(const QString& work_dir, const ConfigParser::ConfigMap &configs)
+{
+  //step1 load engines
+  if(!configs.contains(CONFIG_NEURON_SWEEP) ||
+     !configs.contains(CONFIG_NEURON_GARBAGE) ||
+     !configs.contains(CONFIG_NEURON_WASH)){
+    qDebug()<<tr("[%1,%2] neuron keywords not exist.").arg(__FILE__).arg(__LINE__);
+    return false;
+  }
+  QString path_sweep;
+  path_sweep.append(work_dir).append(configs[CONFIG_NEURON_SWEEP]);
+  QString path_garbage;
+  path_garbage.append(work_dir).append(configs[CONFIG_NEURON_GARBAGE]);
+  QString path_wash;
+  path_wash.append(work_dir).append(configs[CONFIG_NEURON_WASH]);
+  if(0==LoadEngine(path_sweep,*engine_map_[P_SWEEP])||
+     0==LoadEngine(path_garbage,*engine_map_[P_GARBAGE])||
+     0==LoadEngine(path_wash,*engine_map_[P_WASH])){
+    qDebug()<<tr("[%1,%2] fail to load neurons from local files.").arg(__FILE__).arg(__LINE__);
+    return false;
+  }
+
+  if(configs.contains(CONFIG_ADJUST_PERCENTILE)){
+    this->adjust_percentile_times_ = configs[CONFIG_ADJUST_PERCENTILE].toFloat();
+    qDebug()<<tr("[%1,%2] percentile_times:%3").arg(__FILE__).arg(__LINE__).arg(adjust_percentile_times_);
+  }
+  if(configs.contains(CONFIG_THRESHOLD_MIN_SWEEP_PERCENT)){
+    this->threshold_percent_[P_SWEEP] = configs[CONFIG_THRESHOLD_MIN_SWEEP_PERCENT].toFloat();
+    qDebug()<<tr("[%1,%2] sweep min threshold:%3").arg(__FILE__).arg(__LINE__).arg(this->threshold_percent_[P_SWEEP] );
+  }
+  if(configs.contains(CONFIG_THRESHOLD_MIN_GARBAGE_PERCENT)){
+    this->threshold_percent_[P_GARBAGE] = configs[CONFIG_THRESHOLD_MIN_GARBAGE_PERCENT].toFloat();
+    qDebug()<<tr("[%1,%2] sweep min threshold:%3").arg(__FILE__).arg(__LINE__).arg(this->threshold_percent_[P_GARBAGE] );
+  }
+  if(configs.contains(CONFIG_THRESHOLD_MIN_WASH_PERCENT)){
+    this->threshold_percent_[P_WASH] = configs[CONFIG_THRESHOLD_MIN_WASH_PERCENT].toFloat();
+    qDebug()<<tr("[%1,%2] sweep min threshold:%3").arg(__FILE__).arg(__LINE__).arg(this->threshold_percent_[P_WASH] );
+  }
+  return true;
+}
+
+int MultiPatternService::Classify(QString & strcsv, ResultMap &out_map)
+{
+  QTextStream stream(&strcsv);
+  int total_sample=0;
+  QVector<multi_pattern_result_t> final_filter_list;
+
+
+  while(!stream.atEnd()){
+    //step1. parse input line
+    QString str_line = stream.readLine();
+    str_line.remove("\"");
+    str_line.remove(" ");
+    QStringList str_vals = str_line.split(',');
+    if(str_vals.size()<this->feature_basic_.Window().cols){
+      continue;
+    }
+
+    //step2.convert to data buffer
+    const int data_size = this->feature_basic_.Window().cols;
+    float data_buffer[data_size];
+    for(int i=0;i<data_size;++i){
+      data_buffer[i]=str_vals[i].toFloat();
+    }
+
+    //step3.push to dataframe
+    if(!this->feature_basic_.CheckDataAccpeted(data_buffer,data_size)){
+      continue;
+    }
+
+    //step4. push to dataframe
+    this->ptr_raw_frame_->Push(data_buffer,data_size);
+    ++total_sample;
+    if(!this->ptr_raw_frame_->Full()){
+      continue;
+    }
+
+    //step5. this frame is full
+    const QList<int> keys = this->classifier_map_.keys();
+    QMap<int, FrameFeatureClassifier::result_t> result_map;//engine type, reuslt
+    for(int i=0;i<keys.size();++i){
+      int type = keys[i];
+      FrameFeatureClassifier* ptr_c =  this->classifier_map_[type];
+      //classify the result
+      FrameFeatureClassifier::ResultList r_list;
+      ptr_c->Classify(*ptr_raw_frame_,r_list);
+      if(r_list.size()){
+        result_map.insert(type, r_list.first());
+      }
+    }
+
+    //step6.check if there is best result
+    if(result_map.size()){
+      //step6.1 find the best result
+      int   min_type=0;
+      float min_sum=NeuronEngineFloat::DEFAULT_NEURON_AIF_MAX;
+      for(int i=0;i<keys.size();++i){
+        if(result_map.count(keys[i])==0)continue;
+        int type = keys[i];
+        float dist = this->engine_map_[keys[i]]->ReadNeuron(result_map[type].nid)->Firing()+(1-result_map[type].percentile)*this->adjust_percentile_times_;
+        if(min_sum>dist){
+          min_sum = dist;
+          min_type = type;
+        }
+      }
+      //step7. sum up the best match type
+      multi_pattern_result_t m={min_type,result_map[min_type].peaks,result_map[min_type].samples};
+      final_filter_list.push_back(m);//save the best match list
+      if(out_map.count(min_type)){
+        out_map[min_type].peaks = out_map[min_type].peaks + result_map[min_type].peaks;
+        out_map[min_type].samples = out_map[min_type].samples + result_map[min_type].samples;
+      }else{
+         out_map.insert(min_type,m);
+      }
+
+  #if 0
+      qDebug()<<tr("Best match is %1 cat:%2, peaks:%3, percentile:%4, samples:%5, min_sum:%6")
+                .arg(min_type)
+                .arg(result_map[min_type].cat)
+                .arg(result_map[min_type].peaks)
+                .arg(result_map[min_type].percentile)
+                .arg(result_map[min_type].samples)
+                .arg(min_sum);
+  #endif
+    }
+
+    //last step. pop out delta
+    this->ptr_raw_frame_->Pop(feature_basic_.Window().delta);
+    total_sample = total_sample+feature_basic_.Window().rows-feature_basic_.Window().delta;
+  }
+  //step1. parse the final filter
+  if(final_filter_list.size()>2){
+    for(int i=1;i<final_filter_list.size()-1;++i){
+      multi_pattern_result_t & curr = final_filter_list[i];
+      multi_pattern_result_t & left = final_filter_list[i-1];
+      multi_pattern_result_t & right = final_filter_list[i+1];
+      if(curr.p_type!=left.p_type && curr.p_type!=right.p_type){
+         out_map[curr.p_type].peaks = out_map[curr.p_type].peaks-curr.peaks;
+         out_map[curr.p_type].samples = out_map[curr.p_type].samples-curr.samples;
+      }
+    }
+  }
+
+  QList<int>keys = out_map.keys();
+  for(int i=0;i<keys.size();++i){
+    int type = keys[i];
+    float p = static_cast<float>(out_map[type].samples)/static_cast<float>(total_sample);
+    if(p<this->threshold_percent_[type]){
+      out_map.remove(type);
+      continue;
+    }
+    out_map[type].percentile = p;
+  }
+
+  return total_sample;
+}
+int MultiPatternService::LoadEngine(const QString& src_path,NeuronEngineFloat & engine){
+  if(src_path.isEmpty())return 0;
+  QFile src_file(src_path);
+  if(!src_file.open(QFile::ReadOnly)){
+    qDebug()<<tr("[%1,%2]Fail to open file %3").arg(__FILE__).arg(__LINE__).arg(src_path);
+    return 0;
+  }
+  QTextStream src_text(&src_file);
+
+  //step1.reset engine
+  engine.ResetEngine();
+
+  //step2.set to restore mode
+  engine.BeginRestoreMode();
+  while(!src_text.atEnd()){
+    QString str_record = src_text.readLine();
+    QStringList str_list = str_record.split(',');
+    if(str_list.size()<3)continue;
+
+    //read cat,min_aif, aif
+    int cat =  str_list[0].toInt();
+    int min_aif = str_list[1].toFloat();
+    int aif = str_list[2].toFloat();
+
+    //read buffer
+    const int neuron_size=1024;
+    float neuron_buffer[neuron_size];
+    int neuron_len=0;
+    for(int i=0;i<str_list.size()-3;++i){
+      neuron_buffer[i]=str_list[3+i].toFloat();
+      ++neuron_len;
+    }
+
+    //restore
+    engine.RestoreNeuron(neuron_buffer,neuron_len,cat,aif,min_aif);
+  }
+  engine.EndRestoreMode();
+  return engine.NeuronCount();
+}

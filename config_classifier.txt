@@ -1,0 +1,19 @@
+; this is server related part
+host = 121.196.224.164
+port = 20072
+
+; max threads
+pattern_threads=10
+
+; this is sweep, garbage, wash related neuron files
+neuron_sweep = neurons_sweep.csv
+neuron_garbage = neurons_garbage.csv
+neuron_wash = neurons_wash.csv
+
+; this is adjust parameters
+adjust_arg_percent = 1000
+
+; threshold
+threshold_min_sweep_percent=0.10
+threshold_min_garbage_percent=0.08
+threshold_min_wash_percent=0.25

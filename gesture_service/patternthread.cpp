@@ -286,7 +286,7 @@ void PatternThread::AnalyzeCount(const QMap<int, int> &frame_count,
     item.type=g_type;
     item.samples=max_samples*adjust_sample_[g_type];
     item.count = max_count*adjust_count_[g_type];
-     out_report.insert(g_type,item);
+    out_report.insert(g_type,item);
   }
 }
 
