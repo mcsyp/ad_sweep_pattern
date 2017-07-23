@@ -71,7 +71,13 @@ int main(int argc, char *argv[])
   PushFileToService(QString(PROCESSED_61),service);
   qDebug()<<"======================================================================"<<endl;
 
+  PushFileToService(QString(PROCESSED_60),service);
+  qDebug()<<"======================================================================"<<endl;
+
   PushFileToService(QString(PROCESSED_91),service);
+  qDebug()<<"======================================================================"<<endl;
+
+  PushFileToService(QString(PROCESSED_70),service);
   qDebug()<<"======================================================================"<<endl;
 #else
   QString path("../../2017-07-22-8-10/863137003290778_2017-07-22 08-00-00_2017-07-22 10-00-00.csv");

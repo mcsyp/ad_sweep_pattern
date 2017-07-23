@@ -89,7 +89,8 @@ void PatternThread::run(){
   QList<int> keys = out_map.keys();
   for(int i=0;i<keys.size();++i){
     int type = keys[i];
-    qDebug()<<QString("Type[%1], peaks:%2, samples:%3, percent:%4")
+    qDebug()<<QString("[%1,%2]Type[%3], peaks:%4, samples:%5, percent:%6")
+              .arg(__FILE__).arg(__LINE__)
               .arg(type)
               .arg(out_map[type].peaks)
               .arg(out_map[type].samples)

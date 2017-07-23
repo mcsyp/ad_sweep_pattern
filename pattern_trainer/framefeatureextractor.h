@@ -14,7 +14,7 @@ class FrameFeatureExtractor: public feature_engine::FeatureExtractor{
 public:
   static constexpr int RAW_ROWS=180;
   static constexpr int RAW_DELTA=150;
-  static constexpr int RAW_COLS=2;//FIXED!! only X and Y are used
+  static constexpr int RAW_COLS=3;//FIXED!! only X and Y are used
 
   static constexpr float FEATURE_GAP_MIN=10.0f;//preprocess delta
   static constexpr float FEATURE_GAP_MAX=2000.0f;//preprocess delta
