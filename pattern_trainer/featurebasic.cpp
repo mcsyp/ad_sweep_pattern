@@ -79,3 +79,9 @@ bool FeatureBasic::CheckDataAccpeted(float row_data[], int row_len){
   }
   return ret;
 }
+
+void FeatureBasic::Reset(){
+  for(int i=0;i<gap_list_.size();++i){
+    gap_list_[i].Reset();
+  }
+}

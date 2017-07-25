@@ -11,19 +11,23 @@ neuron_garbage = neurons_garbage.csv
 neuron_wash = neurons_wash.csv
 
 ; this is formula parameters
-formula_arg_percent = 1000
+formula_arg_percent = 800
 
 
 ; threshold
 threshold_min_sweep_percent=0.08
 threshold_min_garbage_percent=0.05
-threshold_min_wash_percent=0.35
+threshold_min_wash_percent=0.15
+
+threshold_min_sweep_peaks=8
+threshold_min_garbage_peaks=2
+threshold_min_wash_peaks=8
 
 ; this adjust arguments
-adjust_peak_sweep=3.7
+adjust_peak_sweep=2.5
 adjust_peak_garbage=1.1
-adjust_peak_wash=0.9
+adjust_peak_wash=1.0
 
-adjust_samples_sweep=2.2
+adjust_samples_sweep=2.0
 adjust_samples_garbage=1.1
 adjust_samples_wash=0.9

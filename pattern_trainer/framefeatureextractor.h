@@ -13,10 +13,10 @@ class FrameFeatureExtractor: public feature_engine::FeatureExtractor{
   Q_OBJECT
 public:
   static constexpr int RAW_ROWS=180;
-  static constexpr int RAW_DELTA=150;
+  static constexpr int RAW_DELTA=170;
   static constexpr int RAW_COLS=3;//FIXED!! only X and Y are used
 
-  static constexpr float FEATURE_GAP_MIN=10.0f;//preprocess delta
+  static constexpr float FEATURE_GAP_MIN=50.0f;//preprocess delta
   static constexpr float FEATURE_GAP_MAX=2000.0f;//preprocess delta
 
   static constexpr float FEATURE_SCALE_ENERGY=1.0f/1000.0f; //energy extraction
@@ -24,6 +24,7 @@ public:
   static constexpr float FEATURE_SCALE_CORRELATION= 200.0f;
   static constexpr float FEATURE_SCALE_KUR=200.0f;
   static constexpr float FEATURE_SCALE_SKEW=60.0f;
+  static constexpr float FEATURE_SCALE_SAMPLE_PER_PEAK=40.0f;
 
   explicit FrameFeatureExtractor(const param_wave_t & wave_filter);
   /*purpose: extracted features from raw data

@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
               g_sweep_array,g_sweep_size,
               g_sweep_validate_array,g_sweep_validate_size);
   }while(0);
-#if 1
+
   do{
     param_wave_t garbage_wave={GARBAGE_MIN_WAVE,GARBAGE_MAX_WAVE};
     FrameFeatureTrainer garbage_trainer(garbage_wave);
@@ -66,7 +66,6 @@ int main(int argc, char *argv[])
               g_wash_array,g_wash_size,
               g_wash_validate_array,g_wash_validate_size);
   }while(0);
-#endif
 }
 
 void  TrainCase(FeatureTrainer * trainer,

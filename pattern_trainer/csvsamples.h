@@ -84,6 +84,10 @@
 #define CAT_GARBAGE_1 201
 #define PROCESSED_62   "../20170707-sound/3.garbage/right_high_left_low_0.csv"
 #define PROCESSED_63   "../20170707-sound/3.garbage/right_high_left_low_1.csv"
+#define PROCESSED_64   "../20170707-sound/3.garbage/right_high_2.csv"
+
+#define CAT_GARBAGE_2 202
+#define PROCESSED_65   "../20170707-sound/3.garbage/left_high_0.csv"
 
 #define CAT_WASH_BIN_0 300
 #define PROCESSED_70   "../20170707-sound/4.wash_bin/right_circle_0.csv"
@@ -100,8 +104,6 @@
 #define PROCESSED_81   "../20170707-sound/4.wash_scrape_adv/left_crouch_forward_1.csv"
 #define PROCESSED_82   "../20170707-sound/4.wash_scrape_adv/left_crouch_horizon_0.csv"
 #define PROCESSED_83   "../20170707-sound/4.wash_scrape_adv/left_crouch_horizon_1.csv"
-#define PROCESSED_200   "../20170707-sound/4.wash_scrape_adv/dull_stand_vertical_0.csv"
-#define PROCESSED_201   "../20170707-sound/4.wash_scrape_adv/dull_stand_vertical_1.csv"
 
 #define CAT_SCRAPE_ADV_1 322
 #define PROCESSED_84   "../20170707-sound/4.wash_scrape_adv/right_crouch_forward_0.csv"
@@ -109,14 +111,25 @@
 #define PROCESSED_86   "../20170707-sound/4.wash_scrape_adv/right_crouch_horizon_0.csv"
 #define PROCESSED_87   "../20170707-sound/4.wash_scrape_adv/right_crouch_horizon_1.csv"
 
-#define CAT_WASH_ADV 330
-#define PROCESSED_90   "../20170707-sound/4.wash_adv/left_crouch_horizon_0.csv"
-#define PROCESSED_91   "../20170707-sound/4.wash_adv/left_crouch_vertical_0.csv"
-#define PROCESSED_92   "../20170707-sound/4.wash_adv/left_stand_horizon_0.csv"
-#define PROCESSED_93   "../20170707-sound/4.wash_adv/left_stand_vertical_0.csv"
+#define CAT_SCRAPE_ADV_2 323
+#define PROCESSED_200   "../20170707-sound/4.wash_scrape_adv/dull_stand_vertical_0.csv"
+#define PROCESSED_201   "../20170707-sound/4.wash_scrape_adv/dull_stand_vertical_1.csv"
+#define PROCESSED_202    "../20170707-sound/4.wash_scrape_adv/right_stand_vertical.csv"
+
+#define CAT_WASH_ADV_0 330
+#define PROCESSED_90   "../20170707-sound/4.wash_adv/left_crouch_vertical_0.csv"
+#define PROCESSED_91   "../20170707-sound/4.wash_adv/left_stand_vertical_0.csv"
+
+#define CAT_WASH_ADV_1 331
+#define PROCESSED_92   "../20170707-sound/4.wash_adv/left_crouch_horizon_0.csv"
+#define PROCESSED_93   "../20170707-sound/4.wash_adv/left_stand_horizon_0.csv"
 #define PROCESSED_94   "../20170707-sound/4.wash_adv/right_crouch_horizon_0.csv"
+
+#define CAT_WASH_ADV_2 332
 #define PROCESSED_95   "../20170707-sound/4.wash_adv/right_stand_horizon_0.csv"
 #define PROCESSED_96   "../20170707-sound/4.wash_adv/right_stand_horizon_1.csv"
+
+#define CAT_WASH_ADV_3 333
 #define PROCESSED_97   "../20170707-sound/4.wash_adv/right_stand_vertical_0.csv"
 #define PROCESSED_98   "../20170707-sound/4.wash_adv/right_stand_vertical_1.csv"
 

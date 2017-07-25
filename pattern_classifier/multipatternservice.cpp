@@ -37,6 +37,9 @@ MultiPatternService::MultiPatternService(QObject* parent)
   this->threshold_percent_.insert(P_SWEEP, 0.08f);
   this->threshold_percent_.insert(P_GARBAGE,0.08f);
   this->threshold_percent_.insert(P_WASH,0.08f);
+  this->threshold_peaks_.insert(P_SWEEP, 1.0f);
+  this->threshold_peaks_.insert(P_GARBAGE,1.0f);
+  this->threshold_peaks_.insert(P_WASH,1.0f);
 
   this->adjust_peaks_.insert(P_SWEEP, 1.0f);
   this->adjust_peaks_.insert(P_GARBAGE,1.0f);
@@ -79,7 +82,7 @@ bool MultiPatternService::Setup(const QString& work_dir, const ConfigParser::Con
     qDebug()<<tr("[%1,%2] percentile_times:%3").arg(__FILE__).arg(__LINE__).arg(adjust_percentile_times_);
   }
 
-  //Threshold
+  //Threshold percent
   if(configs.contains(CONFIG_THRESHOLD_MIN_SWEEP_PERCENT)){
     this->threshold_percent_[P_SWEEP] = configs[CONFIG_THRESHOLD_MIN_SWEEP_PERCENT].toFloat();
     qDebug()<<tr("[%1,%2] sweep min threshold:%3").arg(__FILE__).arg(__LINE__).arg(this->threshold_percent_[P_SWEEP] );
@@ -91,6 +94,19 @@ bool MultiPatternService::Setup(const QString& work_dir, const ConfigParser::Con
   if(configs.contains(CONFIG_THRESHOLD_MIN_WASH_PERCENT)){
     this->threshold_percent_[P_WASH] = configs[CONFIG_THRESHOLD_MIN_WASH_PERCENT].toFloat();
     qDebug()<<tr("[%1,%2] wash min threshold:%3").arg(__FILE__).arg(__LINE__).arg(this->threshold_percent_[P_WASH] );
+  }
+  //threshold peaks
+  if(configs.contains(CONFIG_THRESHOLD_MIN_SWEEP_PEAKS)){
+    this->threshold_peaks_[P_SWEEP] = configs[CONFIG_THRESHOLD_MIN_SWEEP_PEAKS].toFloat();
+    qDebug()<<tr("[%1,%2] sweep min threshold peaks:%3").arg(__FILE__).arg(__LINE__).arg(this->threshold_peaks_[P_SWEEP] );
+  }
+  if(configs.contains(CONFIG_THRESHOLD_MIN_GARBAGE_PEAKS)){
+    this->threshold_peaks_[P_GARBAGE] = configs[CONFIG_THRESHOLD_MIN_GARBAGE_PEAKS].toFloat();
+    qDebug()<<tr("[%1,%2] garbage min threshold peaks:%3").arg(__FILE__).arg(__LINE__).arg(this->threshold_peaks_[P_GARBAGE] );
+  }
+  if(configs.contains(CONFIG_THRESHOLD_MIN_WASH_PEAKS)){
+    this->threshold_peaks_[P_WASH] = configs[CONFIG_THRESHOLD_MIN_WASH_PEAKS].toFloat();
+    qDebug()<<tr("[%1,%2] wash min threshold peaks:%3").arg(__FILE__).arg(__LINE__).arg(this->threshold_peaks_[P_WASH] );
   }
 
   //PEAKS
@@ -190,7 +206,17 @@ int MultiPatternService::Classify(QString & strcsv, ResultMap &out_map)
           min_sum = dist;
           min_type = type;
         }
+#if 1
+    qDebug()<<tr("[%1]cat:%2, peaks:%3, percentile:%4, samples:%5, distance:%6")
+              .arg(i)
+              .arg(result_map[min_type].cat)
+              .arg(result_map[min_type].peaks)
+              .arg(result_map[min_type].percentile)
+              .arg(result_map[min_type].samples)
+              .arg(dist);
+#endif
       }
+
       //step7. sum up the best match type
       multi_pattern_result_t m;
       m.p_type = min_type;
@@ -204,14 +230,15 @@ int MultiPatternService::Classify(QString & strcsv, ResultMap &out_map)
          out_map.insert(min_type,m);
       }
 
-  #if 0
+  #if 1
       qDebug()<<tr("Best match is %1 cat:%2, peaks:%3, percentile:%4, samples:%5, min_sum:%6")
                 .arg(min_type)
                 .arg(result_map[min_type].cat)
                 .arg(result_map[min_type].peaks)
                 .arg(result_map[min_type].percentile)
                 .arg(result_map[min_type].samples)
-                .arg(min_sum);
+                .arg(min_sum)
+              <<endl;
   #endif
     }
 
@@ -238,7 +265,7 @@ int MultiPatternService::Classify(QString & strcsv, ResultMap &out_map)
   for(int i=0;i<keys.size();++i){
     int type = keys[i];
     float p = static_cast<float>(out_map[type].samples)/static_cast<float>(accepted_samples);
-    if(p<this->threshold_percent_[type]){
+    if(p<this->threshold_percent_[type] || out_map[type].peaks<this->threshold_peaks_[type]){
       out_map.remove(type);
       continue;
     }
@@ -262,6 +289,12 @@ int MultiPatternService::Classify(QString & strcsv, ResultMap &out_map)
             .arg(accepted_samples);
 #endif
   return actual_samples;
+}
+
+void MultiPatternService::Reset(){
+  this->ptr_raw_frame_->Clear();
+  this->feature_basic_.Reset();
+
 }
 int MultiPatternService::LoadEngine(const QString& src_path,NeuronEngineFloat & engine){
   if(src_path.isEmpty())return 0;

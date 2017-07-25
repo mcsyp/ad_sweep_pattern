@@ -20,6 +20,10 @@
 #define CONFIG_THRESHOLD_MIN_GARBAGE_PERCENT  "threshold_min_garbage_percent"
 #define CONFIG_THRESHOLD_MIN_WASH_PERCENT     "threshold_min_wash_percent"
 
+#define CONFIG_THRESHOLD_MIN_SWEEP_PEAKS   "threshold_min_sweep_peaks"
+#define CONFIG_THRESHOLD_MIN_GARBAGE_PEAKS "threshold_min_garbage_peaks"
+#define CONFIG_THRESHOLD_MIN_WASH_PEAKS    "threshold_min_wash_peaks"
+
 #define CONFIG_ADJUST_PEAK_SWEEP "adjust_peak_sweep"
 #define CONFIG_ADJUST_PEAK_GARBAGE "adjust_peak_garbage"
 #define CONFIG_ADJUST_PEAK_WASH "adjust_peak_wash"
@@ -55,6 +59,7 @@ public:
    * the total samples accepted in the input strcsv
    */
   int Classify(QString & strcsv,ResultMap & map);
+  void Reset();
 public:
   static int LoadEngine(const QString& src_path,NeuronEngineFloat & engine);
 
@@ -66,6 +71,7 @@ private:
   QMap<int, FrameFeatureClassifier*> classifier_map_;
 
   QMap<int, float> threshold_percent_;
+  QMap<int, float> threshold_peaks_;
   QMap<int, float> adjust_peaks_;
   QMap<int, float> adjust_samples_;
   float adjust_percentile_times_;

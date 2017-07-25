@@ -70,6 +70,7 @@ namespace feature_engine{
      * true if this row of data could be accepted
      */
     bool CheckDataAccpeted(float row_data[], int row_len);
+    void Reset();
   protected:
     inline bool ValidateWindow(const param_window_t & window);
     inline bool ValidateGap(const param_gap_filter_t& gap);

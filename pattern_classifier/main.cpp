@@ -20,6 +20,7 @@ void PushFileToService(QString path, MultiPatternService& patter_service){
   QString file_content = text.readAll();
 
   MultiPatternService::ResultMap out_map;
+  patter_service.Reset();
   patter_service.Classify(file_content,out_map);
   QList<int> keys = out_map.keys();
   for(int i=0;i<keys.size();++i){
@@ -64,7 +65,7 @@ int main(int argc, char *argv[])
   MultiPatternService service;
   service.Setup(work_dir,configs);
 
-#if 1
+#if 0
   PushFileToService(QString(PROCESSED_0),service);
   qDebug()<<"======================================================================"<<endl;
 
@@ -80,7 +81,7 @@ int main(int argc, char *argv[])
   PushFileToService(QString(PROCESSED_70),service);
   qDebug()<<"======================================================================"<<endl;
 #else
-  QString path("../../2017-07-22-8-10/863137003290778_2017-07-22 08-00-00_2017-07-22 10-00-00.csv");
+  QString path("../../863137003294663_2017-07-25 16-35-00_2017-07-25 16-45-00.csv");
   PushFileToService(path,service);
   qDebug()<<"======================================================================"<<endl;
 #endif

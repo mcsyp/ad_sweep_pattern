@@ -56,8 +56,8 @@ void PatternThread::run(){
 
   //step2. classify the result
   MultiPatternService::ResultMap out_map;
+  multi_pattern_.Reset();
   int total_samples = multi_pattern_.Classify(raw_csv_,out_map);
-
 
   //step4. compute the frequency
   qDebug()<<endl<<"---------------------------------------------------------";
@@ -95,6 +95,7 @@ void PatternThread::run(){
               .arg(out_map[type].peaks)
               .arg(out_map[type].samples)
               .arg(out_map[type].percentile);
+
     report_stream<<type<<","<<out_map[type].peaks<<","<<(out_map[type].samples/freq)<<endl;
   }
 
