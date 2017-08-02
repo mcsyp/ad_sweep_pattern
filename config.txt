@@ -5,19 +5,31 @@ port = 20072
 ; max threads
 pattern_threads=10
 
-; experience adjust parameters
-adjust_sweep_samples = 3.8
-adjust_garbage_samples = 1.5
-adjust_wash_samples = 2.0
+; this is sweep, garbage, wash related neuron files
+neuron_sweep = neurons_sweep.csv
+neuron_garbage = neurons_garbage.csv
+neuron_wash = neurons_wash.csv
+neuron_neg = neurons_negtive.csv
 
-adjust_sweep_count = 3.0
-adjust_garbage_count = 1.8
-adjust_wash_count = 1.75
 
-min_sweep_count = 8
-min_garbage_count = 2
-min_wash_count = 2
+; this is formula parameters
+formula_arg_percent = 1000
 
-; this is sweep related neuron files
-frame_all = ../frame_neurons.csv
-feature_all = ../feature_neurons.csv
+
+; threshold
+threshold_min_sweep_percent=0.08
+threshold_min_garbage_percent=0.05
+threshold_min_wash_percent=0.25
+
+threshold_min_sweep_peaks=8
+threshold_min_garbage_peaks=2
+threshold_min_wash_peaks=10
+
+; this adjust arguments
+adjust_peak_sweep=2.5
+adjust_peak_garbage=1.1
+adjust_peak_wash=1.0
+
+adjust_samples_sweep=2.0
+adjust_samples_garbage=1.1
+adjust_samples_wash=0.9

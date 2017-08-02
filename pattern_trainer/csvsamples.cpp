@@ -138,13 +138,13 @@ training_case_t g_wash_validate_array[]={ {CAT_WASH_BIN_0,PROCESSED_71},
  * garbage pattern related area
  ******************************/
 //garbage source data
-const int g_garbage_size=6;
+const int g_garbage_size=4;
 training_case_t g_garbage_array[]={{CAT_GARBAGE_0,PROCESSED_60},
                                    {CAT_GARBAGE_0,PROCESSED_61},
                                    {CAT_GARBAGE_1,PROCESSED_62},
                                    {CAT_GARBAGE_1,PROCESSED_63},
-                                   {CAT_GARBAGE_1,PROCESSED_64},
-                                   {CAT_GARBAGE_2,PROCESSED_65},
+                                   //{CAT_GARBAGE_1,PROCESSED_64},
+                                   //{CAT_GARBAGE_2,PROCESSED_65},
                                 };
 //garbage source data
 const int g_garbage_validate_size=2;
@@ -177,8 +177,25 @@ training_case_t g_nagtive_array[]={{CAT_GARBAGE_0,PROCESSED_0},
                                    {CAT_SMALL_BROOM_1,PROCESSED_96},
                                   };
 
+/******************************
+ * Negitive cases
+ ******************************/
+const int g_neg_size=4;
+training_case_t g_neg_array[]={{CAT_NEG_RUNNING,PROCESSED_1000},
+                               {CAT_NEG_RUNNING,PROCESSED_1001},
 
+                               {CAT_NEG_SWING,PROCESSED_1100},
+                               {CAT_NEG_SWING,PROCESSED_1101},
 
+                               //{CAT_NEG_WALK,PROCESSED_1200},
+                               //{CAT_NEG_WALK,PROCESSED_1201},
+                              };
+const int g_neg_valid_size=2;
+training_case_t g_neg_valid_array[]={{CAT_NEG_RUNNING,PROCESSED_1000},
+                                     {CAT_NEG_SWING,PROCESSED_1100},
+                                     //{CAT_NEG_WALK,PROCESSED_1201},
+                                     //{CAT_NEG_WALK,PROCESSED_1200},
+                                    };
 #ifdef __cplusplus
 }
 #endif

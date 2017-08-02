@@ -66,6 +66,17 @@ int main(int argc, char *argv[])
               g_wash_array,g_wash_size,
               g_wash_validate_array,g_wash_validate_size);
   }while(0);
+
+  do{
+    param_wave_t neg_wave={NEGATIVE_MIN_WAVE,NEGATIVE_MAX_WAVE};
+    FrameFeatureTrainer neg_trainer(neg_wave);
+    FrameFeatureClassifier neg_classifier(neg_wave);
+    TrainCase(&neg_trainer,
+              &neg_classifier,
+              "../neurons_negtive.csv",
+              g_neg_array,g_neg_size,
+              g_neg_valid_array,g_neg_valid_size);
+  }while(0);
 }
 
 void  TrainCase(FeatureTrainer * trainer,

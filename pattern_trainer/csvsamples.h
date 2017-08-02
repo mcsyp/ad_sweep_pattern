@@ -86,7 +86,7 @@
 #define PROCESSED_63   "../20170707-sound/3.garbage/right_high_left_low_1.csv"
 #define PROCESSED_64   "../20170707-sound/3.garbage/right_high_2.csv"
 
-#define CAT_GARBAGE_2 202
+#define CAT_GARBAGE_2 201
 #define PROCESSED_65   "../20170707-sound/3.garbage/left_high_0.csv"
 
 #define CAT_WASH_BIN_0 300
@@ -105,7 +105,7 @@
 #define PROCESSED_82   "../20170707-sound/4.wash_scrape_adv/left_crouch_horizon_0.csv"
 #define PROCESSED_83   "../20170707-sound/4.wash_scrape_adv/left_crouch_horizon_1.csv"
 
-#define CAT_SCRAPE_ADV_1 322
+#define CAT_SCRAPE_ADV_1 321
 #define PROCESSED_84   "../20170707-sound/4.wash_scrape_adv/right_crouch_forward_0.csv"
 #define PROCESSED_85   "../20170707-sound/4.wash_scrape_adv/right_crouch_forward_1.csv"
 #define PROCESSED_86   "../20170707-sound/4.wash_scrape_adv/right_crouch_horizon_0.csv"
@@ -120,12 +120,12 @@
 #define PROCESSED_90   "../20170707-sound/4.wash_adv/left_crouch_vertical_0.csv"
 #define PROCESSED_91   "../20170707-sound/4.wash_adv/left_stand_vertical_0.csv"
 
-#define CAT_WASH_ADV_1 331
+#define CAT_WASH_ADV_1 330
 #define PROCESSED_92   "../20170707-sound/4.wash_adv/left_crouch_horizon_0.csv"
 #define PROCESSED_93   "../20170707-sound/4.wash_adv/left_stand_horizon_0.csv"
 #define PROCESSED_94   "../20170707-sound/4.wash_adv/right_crouch_horizon_0.csv"
 
-#define CAT_WASH_ADV_2 332
+#define CAT_WASH_ADV_2 333
 #define PROCESSED_95   "../20170707-sound/4.wash_adv/right_stand_horizon_0.csv"
 #define PROCESSED_96   "../20170707-sound/4.wash_adv/right_stand_horizon_1.csv"
 
@@ -133,6 +133,18 @@
 #define PROCESSED_97   "../20170707-sound/4.wash_adv/right_stand_vertical_0.csv"
 #define PROCESSED_98   "../20170707-sound/4.wash_adv/right_stand_vertical_1.csv"
 
+
+#define CAT_NEG_RUNNING 1000
+#define PROCESSED_1000   "../20170707-sound/neg_running/running_right_0.csv"
+#define PROCESSED_1001   "../20170707-sound/neg_running/running_right_1.csv"
+
+#define CAT_NEG_SWING 1100
+#define PROCESSED_1100   "../20170707-sound/neg_swing/swing_right_0.csv"
+#define PROCESSED_1101   "../20170707-sound/neg_swing/swing_right_1.csv"
+
+#define CAT_NEG_WALK 1200
+#define PROCESSED_1200   "../20170707-sound/neg_walk/walk_right_0.csv"
+#define PROCESSED_1201   "../20170707-sound/neg_walk/walk_right_1.csv"
 typedef struct training_case_s{
   int cat;
   const char* path;
@@ -141,28 +153,24 @@ typedef struct training_case_s{
 
 extern const int g_sweep_size;
 extern training_case_t g_sweep_array[];
-
 extern const int g_sweep_validate_size;
 extern training_case_t g_sweep_validate_array[];
 
 extern const int g_wash_size;
 extern training_case_t g_wash_array[];
-
 extern const int g_wash_validate_size;
 extern training_case_t g_wash_validate_array[];
 
 extern const int g_garbage_size;
 extern training_case_t g_garbage_array[];
-
 extern const int g_garbage_validate_size;
 extern training_case_t g_garbage_validate_array[];
 
 extern const int g_nagtive_size;
 extern training_case_t g_nagtive_array[];
 
-extern const int g_all_size;
-extern training_case_t g_all_array[];
-
-extern const int g_all_validate_size;
-extern training_case_t g_all_validate_array[];
+extern const int g_neg_size;
+extern training_case_t g_neg_array[];
+extern const int g_neg_valid_size;
+extern training_case_t g_neg_valid_array[];
 #endif // TESTCASES_H

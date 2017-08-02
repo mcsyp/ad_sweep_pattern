@@ -13,6 +13,7 @@
 #define CONFIG_NEURON_SWEEP    "neuron_sweep"
 #define CONFIG_NEURON_GARBAGE  "neuron_garbage"
 #define CONFIG_NEURON_WASH     "neuron_wash"
+#define CONFIG_NEURON_NEG      "neuron_neg"
 
 #define CONFIG_FORMULA_PERCENTILE  "formula_arg_percent"
 

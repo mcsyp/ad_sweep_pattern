@@ -17,17 +17,21 @@ MultiPatternService::MultiPatternService(QObject* parent)
   NeuronEngineFloat* sweep_engine = new NeuronEngineFloat;
   NeuronEngineFloat* garbage_engine = new NeuronEngineFloat;
   NeuronEngineFloat* wash_engine = new NeuronEngineFloat;
+  NeuronEngineFloat* neg_engine = new NeuronEngineFloat;
   engine_map_.insert(P_SWEEP,sweep_engine);
   engine_map_.insert(P_GARBAGE,garbage_engine);
   engine_map_.insert(P_WASH,wash_engine);
+  engine_map_.insert(P_NEG,neg_engine);
 
   //init frame feature calssifier
   FrameFeatureClassifier* sweep_classifier= new FrameFeatureClassifier({SWEEP_MIN_WAVE,SWEEP_MAX_WAVE},*sweep_engine);
   FrameFeatureClassifier* garbage_classifier= new FrameFeatureClassifier({GARBAGE_MIN_WAVE,GARBAGE_MAX_WAVE},*garbage_engine);
   FrameFeatureClassifier* wash_classifier= new FrameFeatureClassifier({WASH_MIN_WAVE,WASH_MAX_WAVE},*wash_engine);
+  FrameFeatureClassifier* neg_classifier= new FrameFeatureClassifier({NEGATIVE_MIN_WAVE,NEGATIVE_MAX_WAVE},*neg_engine);
   classifier_map_.insert(P_SWEEP,sweep_classifier);
   classifier_map_.insert(P_GARBAGE,garbage_classifier);
   classifier_map_.insert(P_WASH,wash_classifier);
+  classifier_map_.insert(P_NEG,neg_classifier);
 
   //start the patternd service
   this->ptr_raw_frame_ = new DataFrame(feature_basic_.Window().rows,feature_basic_.Window().cols);
@@ -37,14 +41,19 @@ MultiPatternService::MultiPatternService(QObject* parent)
   this->threshold_percent_.insert(P_SWEEP, 0.08f);
   this->threshold_percent_.insert(P_GARBAGE,0.08f);
   this->threshold_percent_.insert(P_WASH,0.08f);
+
+  //init the threshold peaks
   this->threshold_peaks_.insert(P_SWEEP, 1.0f);
   this->threshold_peaks_.insert(P_GARBAGE,1.0f);
   this->threshold_peaks_.insert(P_WASH,1.0f);
 
+
+  //init adjust peaks
   this->adjust_peaks_.insert(P_SWEEP, 1.0f);
   this->adjust_peaks_.insert(P_GARBAGE,1.0f);
   this->adjust_peaks_.insert(P_WASH,1.0f);
 
+  //init adjust samples
   this->adjust_samples_.insert(P_SWEEP, 1.0f);
   this->adjust_samples_.insert(P_GARBAGE,1.0f);
   this->adjust_samples_.insert(P_WASH,1.0f);
@@ -60,19 +69,25 @@ bool MultiPatternService::Setup(const QString& work_dir, const ConfigParser::Con
   //step1 load engines
   if(!configs.contains(CONFIG_NEURON_SWEEP) ||
      !configs.contains(CONFIG_NEURON_GARBAGE) ||
-     !configs.contains(CONFIG_NEURON_WASH)){
+     !configs.contains(CONFIG_NEURON_WASH) ||
+     !configs.contains(CONFIG_NEURON_NEG)){
     qDebug()<<tr("[%1,%2] neuron keywords not exist.").arg(__FILE__).arg(__LINE__);
     return false;
   }
+
   QString path_sweep;
   path_sweep.append(work_dir).append(configs[CONFIG_NEURON_SWEEP]);
   QString path_garbage;
   path_garbage.append(work_dir).append(configs[CONFIG_NEURON_GARBAGE]);
   QString path_wash;
   path_wash.append(work_dir).append(configs[CONFIG_NEURON_WASH]);
+  QString path_neg;
+  path_neg.append(work_dir).append(configs[CONFIG_NEURON_NEG]);
+
   if(0==LoadEngine(path_sweep,*engine_map_[P_SWEEP])||
      0==LoadEngine(path_garbage,*engine_map_[P_GARBAGE])||
-     0==LoadEngine(path_wash,*engine_map_[P_WASH])){
+     0==LoadEngine(path_wash,*engine_map_[P_WASH]) ||
+     0==LoadEngine(path_neg,*engine_map_[P_NEG])){
     qDebug()<<tr("[%1,%2] fail to load neurons from local files.").arg(__FILE__).arg(__LINE__);
     return false;
   }
@@ -197,22 +212,22 @@ int MultiPatternService::Classify(QString & strcsv, ResultMap &out_map)
     if(result_map.size()){
       //step6.1 find the best result
       int   min_type=0;
-      float min_sum=NeuronEngineFloat::DEFAULT_NEURON_AIF_MAX;
+      float min_dist=NeuronEngineFloat::DEFAULT_NEURON_AIF_MAX;
       for(int i=0;i<keys.size();++i){
         if(result_map.count(keys[i])==0)continue;
         int type = keys[i];
         float dist = this->engine_map_[keys[i]]->ReadNeuron(result_map[type].nid)->Firing()+(1-result_map[type].percentile)*this->adjust_percentile_times_;
-        if(min_sum>dist){
-          min_sum = dist;
+        if(min_dist>dist){
+          min_dist = dist;
           min_type = type;
         }
-#if 1
+#if 0
     qDebug()<<tr("[%1]cat:%2, peaks:%3, percentile:%4, samples:%5, distance:%6")
-              .arg(i)
-              .arg(result_map[min_type].cat)
-              .arg(result_map[min_type].peaks)
-              .arg(result_map[min_type].percentile)
-              .arg(result_map[min_type].samples)
+              .arg(type)
+              .arg(result_map[type].cat)
+              .arg(result_map[type].peaks)
+              .arg(result_map[type].percentile)
+              .arg(result_map[type].samples)
               .arg(dist);
 #endif
       }
@@ -231,13 +246,13 @@ int MultiPatternService::Classify(QString & strcsv, ResultMap &out_map)
       }
 
   #if 1
-      qDebug()<<tr("Best match is %1 cat:%2, peaks:%3, percentile:%4, samples:%5, min_sum:%6")
+      qDebug()<<tr("Best match is %1 cat:%2, peaks:%3, percentile:%4, samples:%5, min_dist:%6")
                 .arg(min_type)
                 .arg(result_map[min_type].cat)
                 .arg(result_map[min_type].peaks)
                 .arg(result_map[min_type].percentile)
                 .arg(result_map[min_type].samples)
-                .arg(min_sum)
+                .arg(min_dist)
               <<endl;
   #endif
     }
@@ -264,30 +279,26 @@ int MultiPatternService::Classify(QString & strcsv, ResultMap &out_map)
   QList<int>keys = out_map.keys();
   for(int i=0;i<keys.size();++i){
     int type = keys[i];
-    float p = static_cast<float>(out_map[type].samples)/static_cast<float>(accepted_samples);
-    if(p<this->threshold_percent_[type] || out_map[type].peaks<this->threshold_peaks_[type]){
-      out_map.remove(type);
-      continue;
-    }
-#if 0
-    qDebug()<<tr("[%1,%2]actual out: type:%3, peaks:%4, samples:%5, percentile:%6")
+    float p = static_cast<float>(out_map[type].samples)/static_cast<float>(accepted_samples+1);
+#if 1
+    qDebug()<<tr("[%1,%2]actual out: type:%3, peaks:%4, samples:%5, accepted_samples:%6, percentile:%7")
               .arg(__FILE__).arg(__LINE__)
               .arg(type)
               .arg(out_map[type].peaks)
               .arg(out_map[type].samples)
+              .arg(accepted_samples)
               .arg(p);
 #endif
+    if(p<this->threshold_percent_[type] ||
+       out_map[type].peaks<this->threshold_peaks_[type] ||
+       type==P_NEG){
+      out_map.remove(type);
+      continue;
+    }
     out_map[type].percentile = p;
     out_map[type].peaks = out_map[type].peaks*this->adjust_peaks_[type];
     out_map[type].samples = out_map[type].samples* this->adjust_samples_[type];
   }
-#if 0
-  qDebug()<<tr("[%1,%2]actual_samples:%3, frame_samples:%4, accepted_samples:%5")
-            .arg(__FILE__).arg(__LINE__)
-            .arg(actual_samples)
-            .arg(frame_samples)
-            .arg(accepted_samples);
-#endif
   return actual_samples;
 }
 
@@ -304,7 +315,7 @@ int MultiPatternService::LoadEngine(const QString& src_path,NeuronEngineFloat & 
     return 0;
   }
   QTextStream src_text(&src_file);
-
+  //qDebug()<<tr("[%1,%2]Loading neurons from %3").arg(__FILE__).arg(__LINE__).arg(src_path);
   //step1.reset engine
   engine.ResetEngine();
 

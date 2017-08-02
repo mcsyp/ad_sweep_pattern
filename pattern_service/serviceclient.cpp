@@ -140,7 +140,7 @@ void ServiceClient::onProtocolFoundHead(int cmdid, int payload_size)
 }
 void ServiceClient::onReportReady(QString report){
   qDebug()<<tr("[%1,%2] report:").arg(__FILE__).arg(__LINE__);
-  qDebug()<<report;
+  qDebug()<<report<<endl;
 
   socket_mutex_.lock();
   ServiceProtocol::message_head head;

@@ -65,23 +65,31 @@ int main(int argc, char *argv[])
   MultiPatternService service;
   service.Setup(work_dir,configs);
 
-#if 0
+#if 1
   PushFileToService(QString(PROCESSED_0),service);
   qDebug()<<"======================================================================"<<endl;
+
+  PushFileToService(QString(PROCESSED_34),service);
+  qDebug()<<"======================================================================"<<endl;
+
 
   PushFileToService(QString(PROCESSED_61),service);
   qDebug()<<"======================================================================"<<endl;
 
-  PushFileToService(QString(PROCESSED_60),service);
+
+  PushFileToService(QString(PROCESSED_62),service);
   qDebug()<<"======================================================================"<<endl;
 
-  PushFileToService(QString(PROCESSED_91),service);
+
+  PushFileToService(QString(PROCESSED_71),service);
   qDebug()<<"======================================================================"<<endl;
 
-  PushFileToService(QString(PROCESSED_70),service);
+
+  PushFileToService(QString(PROCESSED_1000),service);
   qDebug()<<"======================================================================"<<endl;
+
 #else
-  QString path("../../863137003294663_2017-07-25 16-35-00_2017-07-25 16-45-00.csv");
+  QString path("../../863137003299555_2017-07-27 14-00-00_2017-07-27 18-00-00.csv");
   PushFileToService(path,service);
   qDebug()<<"======================================================================"<<endl;
 #endif
